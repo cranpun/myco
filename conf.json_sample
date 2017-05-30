@@ -1,0 +1,14 @@
+{
+    "dldirpath": "./dlimgs",
+    "ignorebyte": 100000, 
+    "sites": [
+        {
+            "title": "101_山",
+            "url": "https://www.pexels.com/"
+        },
+        {
+            "title": "102_hoge",
+            "url": "https://www.google.co.jp/search?q=hoge&safe=off&source=lnms&tbm=isch"
+        }
+    ]
+}

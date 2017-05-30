@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        //"module": "umd",
+        "target": "es5",
+        //"target": "node",
+        //"sourceMap": true,
+        "noImplicitAny": false
+    }
+}
