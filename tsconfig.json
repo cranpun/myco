@@ -5,6 +5,7 @@
         "target": "es5",
         //"target": "node",
         //"sourceMap": true,
-        "noImplicitAny": false
+        "noImplicitAny": false,
+        "lib": ["dom", "es2015.promise", "es5"]
     }
 }

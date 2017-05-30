@@ -26,9 +26,9 @@ export class Site {
                 // ダウンロード済みなら実行しない
                 Pagesdb.noPage(pageurl, () => {
                     Pagesdb.putPage(pageurl);
+                    id++;
                     let page = new Page(me.site["title"], pageurl, id);
                     page.download();
-                    id++;
                 });
             });
         });

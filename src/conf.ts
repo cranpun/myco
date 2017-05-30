@@ -111,6 +111,8 @@ export class Conf {
             "<",
             ">",
             "\\|",
+            "\\.",
+            "\\,"
         ];
         for (let x of xchars) {
             ret = ret.replace(new RegExp(x, 'g'), "");
