@@ -1,17 +1,18 @@
 import * as sqlite3 from "sqlite3";
 import * as moment from "moment";
+import { Conf } from "./conf";
+
 //sqlite3.verbose();
 export class Pagesdb {
     private static tabname = "pages";
     private static filename = "pages.db";
+    private static db;
 
     static init() {
-        console.log("init1");
         return new Promise(resolve => {
-        console.log("init2");
-            
             sqlite3.verbose();
-            let db = new sqlite3.Database(Pagesdb.filename);
+            this.db = new sqlite3.Database(Pagesdb.filename);
+            let db = this.db;
             let exists = 0;
 
             db.serialize(() => {
@@ -20,63 +21,58 @@ export class Pagesdb {
                     if (exists <= 0) {
                         db.run("CREATE TABLE " + Pagesdb.tabname + " (url TEXT PRIMARY KEY, created TEXT)", (e) => {
                             if (e != null) {
-                                console.log("cannot create table");
-                                console.log(e);
+                                Conf.procLog("pagesdb", "cannot create table");
+                                Conf.pdException(e);
                             }
-                            db.close();
+                            resolve();
                         });
+                    } else {
+                        resolve();
                     }
+                });
+            });
+        });
+    }
+
+    static putPage(url: string) {
+        return new Promise(resolve => {
+            let db = this.db;
+            db.serialize(() => {
+                // 登録なのでstateはpre
+                let q = "INSERT INTO " + Pagesdb.tabname + " (url, created) VALUES ('" + url + "', '" + moment().format("YYYY-MM-DD HH:mm:ss") + "')";
+                db.run(q, (e) => {
+                    if (e != null) {
+                        Conf.pdException("err ins : " + e + "  " + q);
+                    }
+                    Conf.procLog("pagesdb", "ins : " + q);
                     resolve();
                 });
             });
         });
     }
 
-    private static async exec(func: (db: sqlite3.Database) => void) {
-        let db = new sqlite3.Database(Pagesdb.filename);
-        await func(db);
-        db.close();
-    }
-
-    static putPage(url: string) {
+    static noPage(url: string) {
         return new Promise(resolve => {
-            console.log("hogehoge");
-            resolve();
-            // Pagesdb.exec((db: sqlite3.Database) => {
-            //     db.serialize(() => {
-            //         // 登録なのでstateはpre
-            //         let q = "INSERT INTO " + Pagesdb.tabname + " (url, created) VALUES ('" + url + "', '" + moment().format("YYYY-MM-DD HH:mm:ss") + "')";
-            //         db.run(q, (e) => {
-            //             if (e != null) {
-            //                 console.log("err ins : " + e + "  " + q);
-            //             }
-            //         });
-            //     });
-            // });
+            let db = this.db;
+            let q = "SELECT * FROM " + Pagesdb.tabname + " WHERE url = '" + url + "'";
+            db.serialize(() => {
+                db.get(q, (err: Error, row: any) => {
+                    Conf.procLog("pagesdb", "has ? " + q);
+                    if (err == null) {
+                        if (row == undefined) {
+                            resolve(true); // 行が見つからなかったので初めて。
+                        } else {
+                            resolve(false); // 行が見つかったので既知。
+                        }
+                    } else {
+                        Conf.pdException(err);
+                        resolve(false); // エラーは既知扱い
+                    }
+                });
+            });
         });
     }
-
-    static noPage(url: string, callback: () => void) {
-        return new Promise(resolve => {
-            console.log("hoge-nohoge-");
-            resolve();
-            // Pagesdb.exec((db: sqlite3.Database) => {
-            //     db.serialize(() => {
-            //         db.get("SELECT * FROM " + Pagesdb.tabname + " WHERE url = '" + url + "'", (err, row) => {
-            //             if (err == null) {
-            //                 if (row == undefined) {
-            //                     callback();
-            //                 } else {
-            //                     console.log("hasPage : " + url);
-            //                 }
-            //             } else {
-            //                 console.log("err noPage : " + err);
-            //             }
-            //         });
-            //     });
-            // });
-        });
+    static close() {
+        this.db.close();
     }
-
-
 }

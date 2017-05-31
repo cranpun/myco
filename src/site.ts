@@ -1,8 +1,8 @@
 import * as client from "cheerio-httpcli";
 import { Page } from "./page";
-import * as url from "url";
 import { Conf } from "./conf";
 import { Pagesdb } from "./pagesdb";
+import * as url from "url";
 
 export class Site {
     private site;
@@ -12,24 +12,32 @@ export class Site {
     }
 
     download() {
-        client.set("timeout", Conf.timeout);
-        let p = client.fetch(this.site["url"]);
-        let me = this;
-        let id = 0;
-        p.then((result) => {
-            result.$("a").each(function (idx) {
-                let href = result.$(this).attr("href");
-                // 相対パスを考慮して変換。
-                let pageurl = url.resolve(me.site["url"], href);
-                //console.log("page : " + pageurl);
-
-                // ダウンロード済みなら実行しない
-                Pagesdb.noPage(pageurl, () => {
-                    Pagesdb.putPage(pageurl);
-                    id++;
-                    let page = new Page(me.site["title"], pageurl, id);
-                    page.download();
+        return new Promise(resolve => {
+            client.set("timeout", Conf.timeout);
+            let p = client.fetch(this.site["url"]);
+            let me = this;
+            let id = 0;
+            p.then((result: client.FetchResult) => {
+                Conf.procLog("site", "end : " + this.site.title);
+                result.$("a").each(function (idx) {
+                    try {
+                        let pageurl: string = result.$(this).url({ invalid: false }).toString();
+                        url.parse(pageurl);
+                        Conf.procLog("site", "each : " + pageurl);
+                        // ダウンロード済みなら実行しない
+                        if(Pagesdb.noPage(pageurl)) {
+                            Pagesdb.putPage(pageurl);
+                            Conf.procLog("site", "page start : " + pageurl);
+                            id++;
+                            // let page = new Page(me.site["title"], pageurl, id);
+                            //await page.download();
+                        }
+                    } catch (e) {
+                        // do nothing。不正なリンクなので無視。
+                    }
                 });
+                Conf.procLog("site", "end : each");
+                resolve();
             });
         });
     }

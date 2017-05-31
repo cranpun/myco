@@ -35,26 +35,29 @@ import * as sqlite3 from "sqlite3";
 //         console.log("next");
 //     }
 // }
-
+async function main_test() {
+    await Pagesdb.init();
+    await Pagesdb.putPage("https://www.google.co.jp/intl/ja/optionssssss/");
+    console.log(0);
+    let hoge = await Pagesdb.noPage("https://www.google.co.jp/intl/ja/optionssssss/");
+    console.log(hoge);
+    await Pagesdb.close();
+}
 async function main() {
     try {
-        //await Conf.init();
-console.log("hogehoge0");
+        await Conf.init();
         await Pagesdb.init();
-console.log("hogehoge2");
-
-        await Pagesdb.putPage("hogehoge");
-console.log("hogehoge3");
-        await Pagesdb.noPage("hogehoge", () => {
-            console.log("hoge-no");
-        });
-console.log("hogehoge4");
+        console.log("parse start");
+        await Sites.parse();
+        console.log("parse end");
+        Pagesdb.close();
+        console.log("parse close");
     } catch (e) {
         console.log(e);
     }
 }
 main();
-//Sites.parse();
+
 
 // sqlite3.verbose();
 // var db = new sqlite3.Database(':memory:');

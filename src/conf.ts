@@ -83,7 +83,7 @@ export class Conf {
             }
         }
         catch (e) {
-            Conf.debug(e);
+            Conf.pdException(e);
         }
         return ret;
     }
@@ -118,13 +118,26 @@ export class Conf {
             ret = ret.replace(new RegExp(x, 'g'), "");
         }
         if (ret != str) {
-            console.log("replace : " + str + " -> " + ret);
+            Conf.procLog("replace", str + " -> " + ret);
         }
         return ret;
     }
 
-    static debug(e) {
-        //console.log(e);
+    static pdException(e) {
+        console.log(e);
+    }
+
+    static procLog(tag: string, mes: string) {
+        let tags = [
+            "sites",
+            "site",
+            "page",
+            "pagesdb",
+            "img",
+        ];
+        if( tags.indexOf(tag) >= 0) {
+            console.log("[" + tag + "]" + mes);
+        }
     }
 
 }
