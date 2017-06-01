@@ -130,9 +130,9 @@ export class Conf {
     static procLog(tag: string, mes: string) {
         let tags = [
             "sites",
-            "site",
+            //"site",
             "page",
-            "pagesdb",
+            //"pagesdb",
             "img",
         ];
         if( tags.indexOf(tag) >= 0) {

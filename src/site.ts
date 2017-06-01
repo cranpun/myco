@@ -31,6 +31,8 @@ export class Site {
                                 Conf.procLog("site", "for: " + pageurl);
                                 if(await Pagesdb.noPage(pageurl)) {
                                     await Pagesdb.putPage(pageurl);
+                                    let page = new Page(me.site["title"], pageurl, i);
+                                    await page.download();
                                 }
                             }
                         }
@@ -40,24 +42,6 @@ export class Site {
                     }
                 }
 
-
-                // await result.$("a").each(async function (idx) {
-                //     try {
-                //         let pageurl: string = result.$(this).url({ invalid: false }).toString();
-                //         url.parse(pageurl);
-                //         Conf.procLog("site", "each : " + pageurl);
-                //         // ダウンロード済みなら実行しない
-                //         if(await Pagesdb.noPage(pageurl)) {
-                //             await Pagesdb.putPage(pageurl);
-                //             Conf.procLog("site", "page start : " + pageurl);
-                //             id++;
-                //             // let page = new Page(me.site["title"], pageurl, id);
-                //             //await page.download();
-                //         }
-                //     } catch (e) {
-                //         // do nothing。不正なリンクなので無視。
-                //     }
-                // });
                 Conf.procLog("site", "end : for");
                 resolve();
             });

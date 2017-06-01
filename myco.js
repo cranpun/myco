@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(__webpack_require__.s = 12);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,9 +73,9 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var fs = __webpack_require__(7);
-var path = __webpack_require__(8);
-var moment = __webpack_require__(2);
+var fs = __webpack_require__(8);
+var path = __webpack_require__(9);
+var moment = __webpack_require__(3);
 var Conf = (function () {
     function Conf() {
     }
@@ -195,9 +195,9 @@ var Conf = (function () {
     Conf.procLog = function (tag, mes) {
         var tags = [
             "sites",
-            "site",
+            //"site",
             "page",
-            "pagesdb",
+            //"pagesdb",
             "img",
         ];
         if (tags.indexOf(tag) >= 0) {
@@ -218,8 +218,8 @@ exports.Conf = Conf;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var sqlite3 = __webpack_require__(9);
-var moment = __webpack_require__(2);
+var sqlite3 = __webpack_require__(10);
+var moment = __webpack_require__(3);
 var conf_1 = __webpack_require__(0);
 //sqlite3.verbose();
 var Pagesdb = (function () {
@@ -306,10 +306,16 @@ exports.Pagesdb = Pagesdb;
 /* 2 */
 /***/ (function(module, exports) {
 
-module.exports = require("moment");
+module.exports = require("cheerio-httpcli");
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("moment");
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -350,7 +356,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var sites_1 = __webpack_require__(5);
+var sites_1 = __webpack_require__(7);
 var conf_1 = __webpack_require__(0);
 var pagesdb_1 = __webpack_require__(1);
 // function delay(milliseconds: number) {
@@ -450,140 +456,6 @@ main();
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var client = __webpack_require__(6);
-var conf_1 = __webpack_require__(0);
-var pagesdb_1 = __webpack_require__(1);
-var url = __webpack_require__(10);
-var Site = (function () {
-    function Site(site) {
-        this.site = site;
-    }
-    Site.prototype.download = function () {
-        var _this = this;
-        return new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
-            var _this = this;
-            var p, me, id;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        client.set("timeout", conf_1.Conf.timeout);
-                        p = client.fetch(this.site["url"]);
-                        me = this;
-                        id = 0;
-                        return [4 /*yield*/, p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
-                                var as, i, a, href, pageurl, e_1;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            conf_1.Conf.procLog("site", "dl : " + this.site.title);
-                                            as = result.$("a");
-                                            i = 0;
-                                            _a.label = 1;
-                                        case 1:
-                                            if (!(i < as.length)) return [3 /*break*/, 8];
-                                            _a.label = 2;
-                                        case 2:
-                                            _a.trys.push([2, 6, , 7]);
-                                            a = as[i];
-                                            href = a.attribs["href"];
-                                            if (!(href !== undefined)) return [3 /*break*/, 5];
-                                            pageurl = url.resolve(me.site["url"], href);
-                                            if (!(pageurl.indexOf("javascript") < 0)) return [3 /*break*/, 5];
-                                            conf_1.Conf.procLog("site", "for: " + pageurl);
-                                            return [4 /*yield*/, pagesdb_1.Pagesdb.noPage(pageurl)];
-                                        case 3:
-                                            if (!_a.sent()) return [3 /*break*/, 5];
-                                            return [4 /*yield*/, pagesdb_1.Pagesdb.putPage(pageurl)];
-                                        case 4:
-                                            _a.sent();
-                                            _a.label = 5;
-                                        case 5: return [3 /*break*/, 7];
-                                        case 6:
-                                            e_1 = _a.sent();
-                                            // do nothing : ill url (ex. javascript)
-                                            conf_1.Conf.pdException(e_1);
-                                            return [3 /*break*/, 7];
-                                        case 7:
-                                            i++;
-                                            return [3 /*break*/, 1];
-                                        case 8:
-                                            // await result.$("a").each(async function (idx) {
-                                            //     try {
-                                            //         let pageurl: string = result.$(this).url({ invalid: false }).toString();
-                                            //         url.parse(pageurl);
-                                            //         Conf.procLog("site", "each : " + pageurl);
-                                            //         // ダウンロード済みなら実行しない
-                                            //         if(await Pagesdb.noPage(pageurl)) {
-                                            //             await Pagesdb.putPage(pageurl);
-                                            //             Conf.procLog("site", "page start : " + pageurl);
-                                            //             id++;
-                                            //             // let page = new Page(me.site["title"], pageurl, id);
-                                            //             //await page.download();
-                                            //         }
-                                            //     } catch (e) {
-                                            //         // do nothing。不正なリンクなので無視。
-                                            //     }
-                                            // });
-                                            conf_1.Conf.procLog("site", "end : for");
-                                            resolve();
-                                            return [2 /*return*/];
-                                    }
-                                });
-                            }); })];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
-            });
-        }); });
-    };
-    return Site;
-}());
-exports.Site = Site;
-
-
-/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -626,7 +498,270 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var conf_1 = __webpack_require__(0);
-var site_1 = __webpack_require__(4);
+var client = __webpack_require__(2);
+var Page = (function () {
+    function Page(site_title, pageurl, id) {
+        this.site_title = site_title;
+        this.pageurl = pageurl;
+        this.id = id;
+        this.imgid = 0;
+        // 画像ダウンロード設定
+        // let me = this;
+        // client.download
+        //     .on("ready", function (stream: client.Download.Stream) {
+        //         try {
+        //             if (stream.length < Conf.ignorelength) {
+        //                 return; // 無視するサイズ
+        //             }
+        //             //let url = stream.url.href;
+        //             let ext = Conf.extType(stream.type);
+        //             if (ext == "") {
+        //                 // 違うタイプのファイルは不要
+        //                 return;
+        //             }
+        //             me.imgid++; // ID発行
+        //             let path = Conf.dlfile(me.site_title, me.page_title, ext, me.imgid);
+        //             Conf.procLog("img", "rdy : " + stream.url.href);
+        //             Conf.procLog("img", "   -> " + path);
+        //             stream.pipe(fs.createWriteStream(path));
+        //             Conf.procLog("img", "save : " + path);
+        //         } catch (e1) {
+        //             Conf.pdException(e1);
+        //         }
+        //     });
+        // client.download.on("error", function (err) {
+        //     Conf.pdException(err);
+        // });
+        // client.download.on("end", function () {
+        //     Conf.procLog("img", "end");
+        // });
+    }
+    Page.prototype.download = function () {
+        var _this = this;
+        return new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
+            var _this = this;
+            var doresolve, me_1, p, err_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        doresolve = false;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 4, , 5]);
+                        //Conf.procLog("page", "start:" + this.pageurl);
+                        client.set("timeout", conf_1.Conf.timeout);
+                        me_1 = this;
+                        client.download.parallel = 1;
+                        p = client.fetch(this.pageurl);
+                        return [4 /*yield*/, p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    try {
+                                        me_1.page_title = conf_1.Conf.genPagedirname(result.$("title").text(), me_1.id);
+                                        conf_1.Conf.procLog("page", "dl : " + result.$("title").text());
+                                        //Conf.procLog("page", "    -> " + me.page_title);
+                                        //await $("img").download();
+                                    }
+                                    catch (e2) {
+                                        conf_1.Conf.pdException(e2);
+                                    }
+                                    doresolve = true;
+                                    resolve();
+                                    return [2 /*return*/];
+                                });
+                            }); })];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, p.catch(function (err) {
+                                conf_1.Conf.pdException(err);
+                            })];
+                    case 3:
+                        _a.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        err_1 = _a.sent();
+                        conf_1.Conf.pdException(err_1);
+                        return [3 /*break*/, 5];
+                    case 5:
+                        if (!doresolve) {
+                            // 最後までいかなかったら
+                            resolve();
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+    };
+    return Page;
+}());
+exports.Page = Page;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var client = __webpack_require__(2);
+var page_1 = __webpack_require__(5);
+var conf_1 = __webpack_require__(0);
+var pagesdb_1 = __webpack_require__(1);
+var url = __webpack_require__(11);
+var Site = (function () {
+    function Site(site) {
+        this.site = site;
+    }
+    Site.prototype.download = function () {
+        var _this = this;
+        return new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
+            var _this = this;
+            var p, me, id;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        client.set("timeout", conf_1.Conf.timeout);
+                        p = client.fetch(this.site["url"]);
+                        me = this;
+                        id = 0;
+                        return [4 /*yield*/, p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
+                                var as, i, a, href, pageurl, page, e_1;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0:
+                                            conf_1.Conf.procLog("site", "dl : " + this.site.title);
+                                            as = result.$("a");
+                                            i = 0;
+                                            _a.label = 1;
+                                        case 1:
+                                            if (!(i < as.length)) return [3 /*break*/, 9];
+                                            _a.label = 2;
+                                        case 2:
+                                            _a.trys.push([2, 7, , 8]);
+                                            a = as[i];
+                                            href = a.attribs["href"];
+                                            if (!(href !== undefined)) return [3 /*break*/, 6];
+                                            pageurl = url.resolve(me.site["url"], href);
+                                            if (!(pageurl.indexOf("javascript") < 0)) return [3 /*break*/, 6];
+                                            conf_1.Conf.procLog("site", "for: " + pageurl);
+                                            return [4 /*yield*/, pagesdb_1.Pagesdb.noPage(pageurl)];
+                                        case 3:
+                                            if (!_a.sent()) return [3 /*break*/, 6];
+                                            return [4 /*yield*/, pagesdb_1.Pagesdb.putPage(pageurl)];
+                                        case 4:
+                                            _a.sent();
+                                            page = new page_1.Page(me.site["title"], pageurl, i);
+                                            return [4 /*yield*/, page.download()];
+                                        case 5:
+                                            _a.sent();
+                                            _a.label = 6;
+                                        case 6: return [3 /*break*/, 8];
+                                        case 7:
+                                            e_1 = _a.sent();
+                                            // do nothing : ill url (ex. javascript)
+                                            conf_1.Conf.pdException(e_1);
+                                            return [3 /*break*/, 8];
+                                        case 8:
+                                            i++;
+                                            return [3 /*break*/, 1];
+                                        case 9:
+                                            conf_1.Conf.procLog("site", "end : for");
+                                            resolve();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+    };
+    return Site;
+}());
+exports.Site = Site;
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var conf_1 = __webpack_require__(0);
+var site_1 = __webpack_require__(6);
 var Sites = (function () {
     function Sites() {
     }
@@ -666,40 +801,34 @@ exports.Sites = Sites;
 
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
-module.exports = require("cheerio-httpcli");
-
-/***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = require("sqlite3");
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = require("url");
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(3);
+module.exports = __webpack_require__(4);
 
 
 /***/ })
