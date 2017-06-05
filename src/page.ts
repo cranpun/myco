@@ -19,13 +19,16 @@ export class Page {
         client.download
             .on("ready", function (stream: client.Download.Stream) {
                 try {
+                    //Conf.procLog("img", "dl : " + stream.url.href);
                     if (stream.length < Conf.ignorelength) {
+                        stream.end();
                         return; // 無視するサイズ
                     }
                     //let url = stream.url.href;
                     let ext = Conf.extType(stream.type);
                     if (ext == "") {
                         // 違うタイプのファイルは不要
+                        stream.end();
                         return;
                     }
                     Page.imgid++; // ID発行
@@ -35,6 +38,8 @@ export class Page {
                     Conf.procLog("img", "save : " + path);
                 } catch (e1) {
                     Conf.pdException("page", e1);
+                } finally {
+                    //stream.end();
                 }
             });
         client.download.on("error", function (err) {
@@ -46,11 +51,11 @@ export class Page {
     }
 
     static download(site_title: string, pageurl: string, id: number) {
-        Page.site_title = site_title;
-        Page.pageurl = pageurl;
-        Page.id = id;
-        Page.imgid = 0;
         return new Promise(async resolve => {
+            Page.site_title = site_title;
+            Page.pageurl = pageurl;
+            Page.id = id;
+            Page.imgid = 0;
             let doresolve: boolean = false; // resolveを実行したらtrue
             try {
                 //Conf.procLog("page", "start:" + this.pageurl);
@@ -61,6 +66,7 @@ export class Page {
                     try {
                         Page.page_title = Conf.genPagedirname(result.$("title").text(), Page.id);
                         Conf.procLog("page", "dl : " + result.$("title").text());
+                        //console.log(result.$("img").length);
                         await result.$("img").download();
                     } catch (e2) {
                         Conf.pdException("page", e2);

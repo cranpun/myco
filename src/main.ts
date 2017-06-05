@@ -36,12 +36,13 @@ import * as client from "cheerio-httpcli";
 //         console.log("next");
 //     }
 // }
-async function main_test() {
-    client.download.parallel = 10;
-    Sites.test();
-    console.log(client.download.parallel);
+async function main_old() {
+    await Conf.init();
+    await Pagesdb.init();
+    Page.init();
+    await Page.download("hogehgoe", "https://colopl.co.jp/dreamcollabo/", 1);
 }
-async function main() {
+async function main_org() {
     try {
         await Conf.init();
         await Pagesdb.init();
@@ -56,6 +57,7 @@ async function main() {
         console.log("parse close");
     }
 }
+let main = main_org;
 main();
 
 

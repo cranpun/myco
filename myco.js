@@ -195,8 +195,9 @@ var Conf = (function () {
         var tags = [
             "sites",
             "site",
-            //"page",
+            "page",
             "pagesdb",
+            "img",
         ];
         if (tags.indexOf(tag) >= 0) {
             console.log("【ERR】[" + tag + "]" + e);
@@ -216,7 +217,7 @@ var Conf = (function () {
     };
     return Conf;
 }());
-Conf.timeout = 10 * 1000; // msec
+Conf.timeout = 3 * 1000; // msec
 Conf.ignorelength = 300 * 1000; // バイト
 exports.Conf = Conf;
 
@@ -281,13 +282,16 @@ var Page = (function () {
         client.download
             .on("ready", function (stream) {
             try {
+                //Conf.procLog("img", "dl : " + stream.url.href);
                 if (stream.length < conf_1.Conf.ignorelength) {
+                    stream.end();
                     return; // 無視するサイズ
                 }
                 //let url = stream.url.href;
                 var ext = conf_1.Conf.extType(stream.type);
                 if (ext == "") {
                     // 違うタイプのファイルは不要
+                    stream.end();
                     return;
                 }
                 Page.imgid++; // ID発行
@@ -299,6 +303,9 @@ var Page = (function () {
             catch (e1) {
                 conf_1.Conf.pdException("page", e1);
             }
+            finally {
+                //stream.end();
+            }
         });
         client.download.on("error", function (err) {
             conf_1.Conf.pdException("page", err);
@@ -309,16 +316,16 @@ var Page = (function () {
     };
     Page.download = function (site_title, pageurl, id) {
         var _this = this;
-        Page.site_title = site_title;
-        Page.pageurl = pageurl;
-        Page.id = id;
-        Page.imgid = 0;
         return new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
             var _this = this;
             var doresolve, p, e4_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        Page.site_title = site_title;
+                        Page.pageurl = pageurl;
+                        Page.id = id;
+                        Page.imgid = 0;
                         doresolve = false;
                         _a.label = 1;
                     case 1:
@@ -334,8 +341,10 @@ var Page = (function () {
                                             _a.trys.push([0, 2, , 3]);
                                             Page.page_title = conf_1.Conf.genPagedirname(result.$("title").text(), Page.id);
                                             conf_1.Conf.procLog("page", "dl : " + result.$("title").text());
+                                            //console.log(result.$("img").length);
                                             return [4 /*yield*/, result.$("img").download()];
                                         case 1:
+                                            //console.log(result.$("img").length);
                                             _a.sent();
                                             return [3 /*break*/, 3];
                                         case 2:
@@ -525,7 +534,6 @@ var sites_1 = __webpack_require__(8);
 var conf_1 = __webpack_require__(0);
 var page_1 = __webpack_require__(2);
 var pagesdb_1 = __webpack_require__(3);
-var client = __webpack_require__(1);
 // function delay(milliseconds: number) {
 //     return new Promise<void>(resolve => {
 //         resolve();
@@ -551,17 +559,26 @@ var client = __webpack_require__(1);
 //         console.log("next");
 //     }
 // }
-function main_test() {
+function main_old() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            client.download.parallel = 10;
-            sites_1.Sites.test();
-            console.log(client.download.parallel);
-            return [2 /*return*/];
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, conf_1.Conf.init()];
+                case 1:
+                    _a.sent();
+                    return [4 /*yield*/, pagesdb_1.Pagesdb.init()];
+                case 2:
+                    _a.sent();
+                    page_1.Page.init();
+                    return [4 /*yield*/, page_1.Page.download("hogehgoe", "https://colopl.co.jp/dreamcollabo/", 1)];
+                case 3:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
         });
     });
 }
-function main() {
+function main_org() {
     return __awaiter(this, void 0, void 0, function () {
         var e_1;
         return __generator(this, function (_a) {
@@ -594,6 +611,7 @@ function main() {
         });
     });
 }
+var main = main_org;
 main();
 // sqlite3.verbose();
 // var db = new sqlite3.Database(':memory:');
