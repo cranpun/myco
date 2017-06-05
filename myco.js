@@ -794,7 +794,7 @@ function main_org() {
         });
     });
 }
-var main = main_test;
+var main = main_org;
 main();
 // sqlite3.verbose();
 // var db = new sqlite3.Database(':memory:');

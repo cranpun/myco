@@ -60,7 +60,7 @@ async function main_org() {
         console.log("parse close");
     }
 }
-let main = main_test;
+let main = main_org;
 main();
 
 
