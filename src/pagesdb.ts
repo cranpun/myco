@@ -22,7 +22,7 @@ export class Pagesdb {
                         db.run("CREATE TABLE " + Pagesdb.tabname + " (url TEXT PRIMARY KEY, created TEXT)", (e) => {
                             if (e != null) {
                                 Conf.procLog("pagesdb", "cannot create table");
-                                Conf.pdException(e);
+                                Conf.pdException("pagesdb", e);
                             }
                             resolve();
                         });
@@ -42,7 +42,7 @@ export class Pagesdb {
                 let q = "INSERT INTO " + Pagesdb.tabname + " (url, created) VALUES ('" + url + "', '" + moment().format("YYYY-MM-DD HH:mm:ss") + "')";
                 db.run(q, (e) => {
                     if (e != null) {
-                        Conf.pdException("err ins : " + e + "  " + q);
+                        Conf.pdException("pagesdb", "err ins : " + e + "  " + q);
                     }
                     Conf.procLog("pagesdb", "ins : " + q);
                     resolve();
@@ -65,7 +65,7 @@ export class Pagesdb {
                             resolve(false); // 行が見つかったので既知。
                         }
                     } else {
-                        Conf.pdException(err);
+                        Conf.pdException("pagesdb", err);
                         resolve(false); // エラーは既知扱い
                     }
                 });

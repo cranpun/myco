@@ -3,6 +3,7 @@ import { Conf } from "./conf";
 import { Page } from "./page";
 import { Pagesdb } from "./pagesdb";
 import * as sqlite3 from "sqlite3";
+import * as client from "cheerio-httpcli";
 
 // function delay(milliseconds: number) {
 //     return new Promise<void>(resolve => {
@@ -36,24 +37,23 @@ import * as sqlite3 from "sqlite3";
 //     }
 // }
 async function main_test() {
-    await Pagesdb.init();
-    await Pagesdb.putPage("https://www.google.co.jp/intl/ja/optionssssss/");
-    console.log(0);
-    let hoge = await Pagesdb.noPage("https://www.google.co.jp/intl/ja/optionssssss/");
-    console.log(hoge);
-    await Pagesdb.close();
+    client.download.parallel = 10;
+    Sites.test();
+    console.log(client.download.parallel);
 }
 async function main() {
     try {
         await Conf.init();
         await Pagesdb.init();
+        Page.init(); // ダウンロード設定
         console.log("parse start");
         await Sites.parse();
         console.log("parse end");
-        Pagesdb.close();
-        console.log("parse close");
     } catch (e) {
         console.log(e);
+    } finally {
+        Pagesdb.close();
+        console.log("parse close");
     }
 }
 main();

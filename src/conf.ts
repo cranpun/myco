@@ -83,7 +83,7 @@ export class Conf {
             }
         }
         catch (e) {
-            Conf.pdException(e);
+            Conf.pdException("conf", e);
         }
         return ret;
     }
@@ -112,7 +112,9 @@ export class Conf {
             ">",
             "\\|",
             "\\.",
-            "\\,"
+            "\\,",
+            "\\r",
+            "\\n",
         ];
         for (let x of xchars) {
             ret = ret.replace(new RegExp(x, 'g'), "");
@@ -123,19 +125,28 @@ export class Conf {
         return ret;
     }
 
-    static pdException(e) {
-        console.log(e);
+    static pdException(tag: string, e) {
+        let tags = [
+            "sites",
+            "site",
+            //"page",
+            "pagesdb",
+            //"img",
+        ];
+        if (tags.indexOf(tag) >= 0) {
+            console.log("【ERR】[" + tag + "]" + e);
+        }
     }
 
     static procLog(tag: string, mes: string) {
         let tags = [
             "sites",
-            //"site",
+            "site",
             "page",
             //"pagesdb",
             "img",
         ];
-        if( tags.indexOf(tag) >= 0) {
+        if (tags.indexOf(tag) >= 0) {
             console.log("[" + tag + "]" + mes);
         }
     }
