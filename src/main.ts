@@ -41,28 +41,22 @@ async function main_test() {
     await Pagesdb.init();
     Page.init();
     
-    Page.download("hogehoge", "http://supo-tu-kannrenn.com/nihonnarupusu-doko-yurai-tizu-1990", 1);
-    console.log("   ===============================  ");
-    Page.download("hogehoge", "https://colopl.co.jp/dreamcollabo/", 2);
+    Page.download("hogehoge", "https://www.google.co.jp/setprefs?safeui=on&sig=0_KY3D0pQEFdnsVeipyvcaVk_hiTY%3D&prev=https://www.google.co.jp/search?q%3D%25E6%2597%25A5%25E6%259C%25AC%25E3%2582%25A2%25E3%2583%25AB%25E3%2583%2597%25E3%2582%25B9%26oq%3D%25E6%2597%25A5%25E6%259C%25AC%25E3%2582%25A2%25E3%2583%25AB%25E3%2583%2597%25E3%2582%25B9%26aqs%3Dchrome..69i57j69i60l3j69i65.2169j0j9%26sourceid%3Dchrome%26ie%3DUTF-8", 1);
+    //console.log("   ===============================  ");
+    //Page.download("hogehoge", "https://colopl.co.jp/dreamcollabo/", 2);
 }
-async function main_org() {
+async function main() {
     try {
-        await Conf.init();
-        await Pagesdb.init();
-        Page.init(); // ダウンロード設定
-        console.log("parse start");
-        Sites.next(); // 着火。後は下のクラスから自動で呼ばれる.
-        console.log("parse end");
+        console.log("main_start");
+        await Sites.init();
     } catch (e) {
         console.log(e);
-    } finally {
-        Pagesdb.close();
-        console.log("parse close");
-    }
+    } 
+    console.log("main_end");
 }
-let main = main_org;
+//let main = main_org;
+//main_test();
 main();
-
 
 // sqlite3.verbose();
 // var db = new sqlite3.Database(':memory:');
