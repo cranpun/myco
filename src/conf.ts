@@ -7,7 +7,8 @@ export class Conf {
     static params: string[];
     static today: string; // 保存する日付ディレクトリの日付。日をまたいでも変えない。
     static timeout: number = 3 * 1000; // msec
-    static ignorelength: number = 300 * 1000; // バイト
+    //static ignorelength: number = 300 * 1000; // バイト
+    static ignorelength: number = 0 * 1000; // バイト
 
     static init(): void {
         let json: string = fs.readFileSync('./conf.json').toString();

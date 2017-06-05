@@ -36,11 +36,14 @@ import * as client from "cheerio-httpcli";
 //         console.log("next");
 //     }
 // }
-async function main_old() {
+async function main_test() {
     await Conf.init();
     await Pagesdb.init();
     Page.init();
-    await Page.download("hogehgoe", "https://colopl.co.jp/dreamcollabo/", 1);
+    
+    Page.download("hogehoge", "http://supo-tu-kannrenn.com/nihonnarupusu-doko-yurai-tizu-1990", 1);
+    console.log("   ===============================  ");
+    Page.download("hogehoge", "https://colopl.co.jp/dreamcollabo/", 2);
 }
 async function main_org() {
     try {
@@ -48,7 +51,7 @@ async function main_org() {
         await Pagesdb.init();
         Page.init(); // ダウンロード設定
         console.log("parse start");
-        await Sites.parse();
+        Sites.next(); // 着火。後は下のクラスから自動で呼ばれる.
         console.log("parse end");
     } catch (e) {
         console.log(e);
@@ -57,7 +60,7 @@ async function main_org() {
         console.log("parse close");
     }
 }
-let main = main_org;
+let main = main_test;
 main();
 
 
