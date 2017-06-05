@@ -16,12 +16,18 @@ export class Page {
 
     static init() {
         // 画像ダウンロード設定
-        client.download.parallel = 3;
+        client.download.parallel = Conf.params["parallel"];
+        client.set("timeout", Conf.params["timeoutmsec"]);
         client.download
             .on("ready", async function (stream: client.Download.Stream) {
                 try {
-                    //Conf.procLog("img", "dl : " + stream.url.href);
-                    if (stream.length < Conf.ignorelength) {
+                    // if(client.download.state.queue <= 1) {
+                    //     // ダウンロードが完了したので次へ。
+                    //     Site.nextPage();
+                    // }
+                    Conf.procLog("img", "dl(" + Page.page_title + ") " + client.download.state.queue);
+                    if (stream.length < Conf.params["ignorebyte"]) {
+                        //Conf.procLog("img", "small : " + stream.length);
                         stream.end();
                         return; // 無視するサイズ
                     }
@@ -29,26 +35,30 @@ export class Page {
                     let ext = Conf.extType(stream.type);
                     if (ext == "") {
                         // 違うタイプのファイルは不要
+                        Conf.procLog("img", "notype : " + ext);
                         stream.end();
                         return;
                     }
                     Page.imgid++; // ID発行
                     let path = Conf.dlfile(Page.site_title, Page.page_title, ext, Page.imgid);
                     Conf.procLog("img", "rdy : " + stream.url.href);
-                    await stream.pipe(fs.createWriteStream(path));
+                    stream.toBuffer((err, buffer) => {
+                        fs.writeFileSync(path, buffer, "binary");
+                    });
                     Conf.procLog("img", "save : " + path);
+
                 } catch (e1) {
-                    Conf.pdException("page", e1);
-                } finally {
-                    //stream.end();
-                }
+                    Conf.pdException("img", "e1" + e1);
+                    //Site.nextPage();
+                } 
             });
         client.download.on("error", function (err) {
-            Conf.pdException("page", err);
+            Conf.pdException("page", " img err : " + err);
+            //Site.nextPage(); // エラーが起きたので次。
         });
         client.download.on("end", function () {
             Conf.procLog("img", "end");
-            Site.next(); // このページのダウンロードが終わったので次へ。
+            Site.nextPage(); // このページのダウンロードが終わったので次へ。
         });
     }
 
@@ -61,24 +71,37 @@ export class Page {
 
         try {
             //Conf.procLog("page", "start:" + this.pageurl);
-            client.set("timeout", Conf.timeout);
-
             let p = client.fetch(Page.pageurl);
             p.then(async (result: client.FetchResult) => {
                 try {
                     Page.page_title = Conf.genPagedirname(result.$("title").text(), Page.id);
-                    Conf.procLog("page", "dl : " + result.$("title").text());
+                    Conf.procLog("page", "dl : " + result.$("title").text() + " : " + this.pageurl);
                     //console.log(result.$("img").length);
-                    result.$("img").download();
+                    let imgs = result.$("img");
+                    if(imgs.length > Conf.params["skipimgcnt"]) {
+                        Conf.procLog("page", "dlimg : " + imgs.length);
+                        client.download.clearCache();
+                        imgs.download();
+                        //Site.nextPage(); // for test
+                    } else {
+                        // 画像がなければ次へ。
+                        Conf.procLog("page", "noimg");
+                        Site.nextPage();
+                    }
                 } catch (e2) {
-                    Conf.pdException("page", e2);
+                    Conf.pdException("page", "e2" + e2);
+                    Site.nextPage();
                 }
             });
             p.catch((e3: Error) => {
-                Conf.pdException("page", e3);
+                Conf.pdException("page", "e3" + e3);
+                // エラーが起きたので次。
+                Site.nextPage();
             });
         } catch (e4) {
-            Conf.pdException("page", e4);
+            Conf.pdException("page", "e4" + e4);
+            // エラーが起きたので次。
+            Site.nextPage();
         }
     }
 

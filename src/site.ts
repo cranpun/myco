@@ -15,7 +15,6 @@ export class Site {
         Site.site = site;
         Site.page_id = 0;
         Site.page_urls = [];
-        client.set("timeout", Conf.timeout);
         try {
             let p = client.fetch(Site.site["url"]);
             p.then(async (result: client.FetchResult) => {
@@ -45,26 +44,35 @@ export class Site {
                 Conf.procLog("site", "end : for");
 
                 // 最初の一つ目のページを処理
-                Site.dlPage();
+                Site.nextPage();
             });
         } catch (e) {
             Conf.pdException("site", e);
+            Sites.nextSite();
         }
     }
 
-    private static dlPage() {
-        Conf.procLog("site", "dlPage : " + Site.page_id);
-        Page.download(Site.site["title"], Site.page_urls[Site.page_id], Site.page_id);
-        Site.page_id++;
-    }
-
-    static next() {
-        if (Site.page_urls != undefined && Site.page_id < Site.page_urls.length) {
-            Site.dlPage();
+    static nextPage() {
+        if (Site.page_urls != undefined) {
+            if (Site.hasPage()) {
+                Conf.procLog("site", "next : " + Site.page_id + "/" + Site.page_urls.length);
+                Site.page_id++;
+                Page.download(Site.site["title"], Site.page_urls[Site.page_id], Site.page_id);
+            } else {
+                // 全部終わったので次のサイトへ。
+                Conf.procLog("site", "end");
+                Sites.nextSite();
+            }
         } else {
-            // 全部終わったので次のサイトへ。
-            Conf.procLog("site", "end");
-            Sites.next();
+            Site.page_id++; // エラーなので進めるだけ。
+        }
+    }
+    static hasPage(): boolean {
+        if (Site.page_urls != undefined) {
+            // urlがあれば数を確認。
+            return Site.page_id < Site.page_urls.length;
+        } else {
+            return false;
         }
     }
 

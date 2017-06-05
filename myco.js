@@ -225,12 +225,6 @@ exports.Conf = Conf;
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports) {
-
-module.exports = require("cheerio-httpcli");
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -272,7 +266,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var conf_1 = __webpack_require__(0);
-var client = __webpack_require__(1);
+var client = __webpack_require__(3);
 var fs = __webpack_require__(6);
 var site_1 = __webpack_require__(4);
 var Page = (function () {
@@ -280,50 +274,54 @@ var Page = (function () {
     }
     Page.init = function () {
         // 画像ダウンロード設定
-        client.download.parallel = 3;
+        client.download.parallel = conf_1.Conf.params["parallel"];
+        client.set("timeout", conf_1.Conf.params["timeoutmsec"]);
         client.download
             .on("ready", function (stream) {
             return __awaiter(this, void 0, void 0, function () {
-                var ext, path, e1_1;
+                var ext, path_1;
                 return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            _a.trys.push([0, 2, 3, 4]);
-                            //Conf.procLog("img", "dl : " + stream.url.href);
-                            if (stream.length < conf_1.Conf.ignorelength) {
-                                stream.end();
-                                return [2 /*return*/]; // 無視するサイズ
-                            }
-                            ext = conf_1.Conf.extType(stream.type);
-                            if (ext == "") {
-                                // 違うタイプのファイルは不要
-                                stream.end();
-                                return [2 /*return*/];
-                            }
-                            Page.imgid++; // ID発行
-                            path = conf_1.Conf.dlfile(Page.site_title, Page.page_title, ext, Page.imgid);
-                            conf_1.Conf.procLog("img", "rdy : " + stream.url.href);
-                            return [4 /*yield*/, stream.pipe(fs.createWriteStream(path))];
-                        case 1:
-                            _a.sent();
-                            conf_1.Conf.procLog("img", "save : " + path);
-                            return [3 /*break*/, 4];
-                        case 2:
-                            e1_1 = _a.sent();
-                            conf_1.Conf.pdException("page", e1_1);
-                            return [3 /*break*/, 4];
-                        case 3: return [7 /*endfinally*/];
-                        case 4: return [2 /*return*/];
+                    try {
+                        // if(client.download.state.queue <= 1) {
+                        //     // ダウンロードが完了したので次へ。
+                        //     Site.nextPage();
+                        // }
+                        conf_1.Conf.procLog("img", "dl(" + Page.page_title + ") " + client.download.state.queue);
+                        if (stream.length < conf_1.Conf.params["ignorebyte"]) {
+                            //Conf.procLog("img", "small : " + stream.length);
+                            stream.end();
+                            return [2 /*return*/]; // 無視するサイズ
+                        }
+                        ext = conf_1.Conf.extType(stream.type);
+                        if (ext == "") {
+                            // 違うタイプのファイルは不要
+                            conf_1.Conf.procLog("img", "notype : " + ext);
+                            stream.end();
+                            return [2 /*return*/];
+                        }
+                        Page.imgid++; // ID発行
+                        path_1 = conf_1.Conf.dlfile(Page.site_title, Page.page_title, ext, Page.imgid);
+                        conf_1.Conf.procLog("img", "rdy : " + stream.url.href);
+                        stream.toBuffer(function (err, buffer) {
+                            fs.writeFileSync(path_1, buffer, "binary");
+                        });
+                        conf_1.Conf.procLog("img", "save : " + path_1);
                     }
+                    catch (e1) {
+                        conf_1.Conf.pdException("img", "e1" + e1);
+                        //Site.nextPage();
+                    }
+                    return [2 /*return*/];
                 });
             });
         });
         client.download.on("error", function (err) {
-            conf_1.Conf.pdException("page", err);
+            conf_1.Conf.pdException("page", " img err : " + err);
+            //Site.nextPage(); // エラーが起きたので次。
         });
         client.download.on("end", function () {
             conf_1.Conf.procLog("img", "end");
-            site_1.Site.next(); // このページのダウンロードが終わったので次へ。
+            site_1.Site.nextPage(); // このページのダウンロードが終わったので次へ。
         });
     };
     Page.download = function (site_title, pageurl, id) {
@@ -334,28 +332,43 @@ var Page = (function () {
         Page.imgid = 0;
         try {
             //Conf.procLog("page", "start:" + this.pageurl);
-            client.set("timeout", conf_1.Conf.timeout);
             var p = client.fetch(Page.pageurl);
             p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
+                var imgs;
                 return __generator(this, function (_a) {
                     try {
                         Page.page_title = conf_1.Conf.genPagedirname(result.$("title").text(), Page.id);
-                        conf_1.Conf.procLog("page", "dl : " + result.$("title").text());
-                        //console.log(result.$("img").length);
-                        result.$("img").download();
+                        conf_1.Conf.procLog("page", "dl : " + result.$("title").text() + " : " + this.pageurl);
+                        imgs = result.$("img");
+                        if (imgs.length > conf_1.Conf.params["skipimgcnt"]) {
+                            conf_1.Conf.procLog("page", "dlimg : " + imgs.length);
+                            client.download.clearCache();
+                            imgs.download();
+                            //Site.nextPage(); // for test
+                        }
+                        else {
+                            // 画像がなければ次へ。
+                            conf_1.Conf.procLog("page", "noimg");
+                            site_1.Site.nextPage();
+                        }
                     }
                     catch (e2) {
-                        conf_1.Conf.pdException("page", e2);
+                        conf_1.Conf.pdException("page", "e2" + e2);
+                        site_1.Site.nextPage();
                     }
                     return [2 /*return*/];
                 });
             }); });
             p.catch(function (e3) {
-                conf_1.Conf.pdException("page", e3);
+                conf_1.Conf.pdException("page", "e3" + e3);
+                // エラーが起きたので次。
+                site_1.Site.nextPage();
             });
         }
         catch (e4) {
-            conf_1.Conf.pdException("page", e4);
+            conf_1.Conf.pdException("page", "e4" + e4);
+            // エラーが起きたので次。
+            site_1.Site.nextPage();
         }
     };
     return Page;
@@ -364,7 +377,7 @@ exports.Page = Page;
 
 
 /***/ }),
-/* 3 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -393,11 +406,11 @@ var Pagesdb = (function () {
                                 conf_1.Conf.procLog("pagesdb", "cannot create table");
                                 conf_1.Conf.pdException("pagesdb", e);
                             }
-                            resolve();
+                            resolve("init");
                         });
                     }
                     else {
-                        resolve();
+                        resolve("no");
                     }
                 });
             });
@@ -455,6 +468,12 @@ exports.Pagesdb = Pagesdb;
 
 
 /***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("cheerio-httpcli");
+
+/***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -496,10 +515,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var client = __webpack_require__(1);
-var page_1 = __webpack_require__(2);
+var client = __webpack_require__(3);
+var page_1 = __webpack_require__(1);
 var conf_1 = __webpack_require__(0);
-var pagesdb_1 = __webpack_require__(3);
+var pagesdb_1 = __webpack_require__(2);
 var sites_1 = __webpack_require__(5);
 var url = __webpack_require__(11);
 var Site = (function () {
@@ -510,7 +529,6 @@ var Site = (function () {
         Site.site = site;
         Site.page_id = 0;
         Site.page_urls = [];
-        client.set("timeout", conf_1.Conf.timeout);
         try {
             var p = client.fetch(Site.site["url"]);
             p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
@@ -553,7 +571,7 @@ var Site = (function () {
                         case 8:
                             conf_1.Conf.procLog("site", "end : for");
                             // 最初の一つ目のページを処理
-                            Site.dlPage();
+                            Site.nextPage();
                             return [2 /*return*/];
                     }
                 });
@@ -561,21 +579,33 @@ var Site = (function () {
         }
         catch (e) {
             conf_1.Conf.pdException("site", e);
+            sites_1.Sites.nextSite();
         }
     };
-    Site.dlPage = function () {
-        conf_1.Conf.procLog("site", "dlPage : " + Site.page_id);
-        page_1.Page.download(Site.site["title"], Site.page_urls[Site.page_id], Site.page_id);
-        Site.page_id++;
-    };
-    Site.next = function () {
-        if (Site.page_urls != undefined && Site.page_id < Site.page_urls.length) {
-            Site.dlPage();
+    Site.nextPage = function () {
+        if (Site.page_urls != undefined) {
+            if (Site.hasPage()) {
+                conf_1.Conf.procLog("site", "next : " + Site.page_id + "/" + Site.page_urls.length);
+                Site.page_id++;
+                page_1.Page.download(Site.site["title"], Site.page_urls[Site.page_id], Site.page_id);
+            }
+            else {
+                // 全部終わったので次のサイトへ。
+                conf_1.Conf.procLog("site", "end");
+                sites_1.Sites.nextSite();
+            }
         }
         else {
-            // 全部終わったので次のサイトへ。
-            conf_1.Conf.procLog("site", "end");
-            sites_1.Sites.next();
+            Site.page_id++; // エラーなので進めるだけ。
+        }
+    };
+    Site.hasPage = function () {
+        if (Site.page_urls != undefined) {
+            // urlがあれば数を確認。
+            return Site.page_id < Site.page_urls.length;
+        }
+        else {
+            return false;
         }
     };
     return Site;
@@ -627,28 +657,52 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var conf_1 = __webpack_require__(0);
 var site_1 = __webpack_require__(4);
-var client = __webpack_require__(1);
+var client = __webpack_require__(3);
+var pagesdb_1 = __webpack_require__(2);
+var page_1 = __webpack_require__(1);
 var Sites = (function () {
     function Sites() {
     }
-    Sites.next = function () {
+    Sites.init = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!(Sites.site_id < conf_1.Conf.params["sites"].length)) return [3 /*break*/, 2];
-                        conf_1.Conf.procLog("sites", "start : " + conf_1.Conf.params["sites"][Sites.site_id]["title"]);
-                        return [4 /*yield*/, site_1.Site.download(conf_1.Conf.params["sites"][Sites.site_id])];
+                        Sites.site_id = 0;
+                        conf_1.Conf.init();
+                        page_1.Page.init(); // ダウンロード設定
+                        //Conf.procLog("sites", "start init");
+                        return [4 /*yield*/, pagesdb_1.Pagesdb.init()];
                     case 1:
+                        //Conf.procLog("sites", "start init");
                         _a.sent();
-                        site_1.Site.next();
-                        Sites.site_id++;
-                        return [3 /*break*/, 3];
-                    case 2:
-                        conf_1.Conf.procLog("sites", "end");
-                        _a.label = 3;
-                    case 3: return [2 /*return*/];
+                        //Conf.procLog("sites", "inits : ");
+                        // 最初の一発目
+                        Sites.nextSite();
+                        return [2 /*return*/];
                 }
+            });
+        });
+    };
+    Sites.nextSite = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                conf_1.Conf.procLog("sites", "next : " + Sites.site_id + "/" + conf_1.Conf.params["sites"].length);
+                if (Sites.site_id < conf_1.Conf.params["sites"].length) {
+                    conf_1.Conf.procLog("sites", "start : " + conf_1.Conf.params["sites"][Sites.site_id]["title"]);
+                    site_1.Site.download(conf_1.Conf.params["sites"][Sites.site_id]);
+                    Sites.site_id++;
+                }
+                else {
+                    if (site_1.Site.hasPage() == false) {
+                        if (client.download.state.queue <= 0) {
+                            // 全部終わったのでクローズ。
+                            //Pagesdb.close();
+                            conf_1.Conf.procLog("sites", "end...program done");
+                        }
+                    }
+                }
+                return [2 /*return*/];
             });
         });
     };
@@ -717,8 +771,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var sites_1 = __webpack_require__(5);
 var conf_1 = __webpack_require__(0);
-var page_1 = __webpack_require__(2);
-var pagesdb_1 = __webpack_require__(3);
+var page_1 = __webpack_require__(1);
+var pagesdb_1 = __webpack_require__(2);
 // function delay(milliseconds: number) {
 //     return new Promise<void>(resolve => {
 //         resolve();
@@ -755,46 +809,37 @@ function main_test() {
                 case 2:
                     _a.sent();
                     page_1.Page.init();
-                    page_1.Page.download("hogehoge", "http://supo-tu-kannrenn.com/nihonnarupusu-doko-yurai-tizu-1990", 1);
-                    console.log("   ===============================  ");
-                    page_1.Page.download("hogehoge", "https://colopl.co.jp/dreamcollabo/", 2);
+                    page_1.Page.download("hogehoge", "https://www.google.co.jp/setprefs?safeui=on&sig=0_KY3D0pQEFdnsVeipyvcaVk_hiTY%3D&prev=https://www.google.co.jp/search?q%3D%25E6%2597%25A5%25E6%259C%25AC%25E3%2582%25A2%25E3%2583%25AB%25E3%2583%2597%25E3%2582%25B9%26oq%3D%25E6%2597%25A5%25E6%259C%25AC%25E3%2582%25A2%25E3%2583%25AB%25E3%2583%2597%25E3%2582%25B9%26aqs%3Dchrome..69i57j69i60l3j69i65.2169j0j9%26sourceid%3Dchrome%26ie%3DUTF-8", 1);
                     return [2 /*return*/];
             }
         });
     });
 }
-function main_org() {
+function main() {
     return __awaiter(this, void 0, void 0, function () {
         var e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 3, 4, 5]);
-                    return [4 /*yield*/, conf_1.Conf.init()];
+                    _a.trys.push([0, 2, , 3]);
+                    console.log("main_start");
+                    return [4 /*yield*/, sites_1.Sites.init()];
                 case 1:
                     _a.sent();
-                    return [4 /*yield*/, pagesdb_1.Pagesdb.init()];
+                    return [3 /*break*/, 3];
                 case 2:
-                    _a.sent();
-                    page_1.Page.init(); // ダウンロード設定
-                    console.log("parse start");
-                    sites_1.Sites.next(); // 着火。後は下のクラスから自動で呼ばれる.
-                    console.log("parse end");
-                    return [3 /*break*/, 5];
-                case 3:
                     e_1 = _a.sent();
                     console.log(e_1);
-                    return [3 /*break*/, 5];
-                case 4:
-                    pagesdb_1.Pagesdb.close();
-                    console.log("parse close");
-                    return [7 /*endfinally*/];
-                case 5: return [2 /*return*/];
+                    return [3 /*break*/, 3];
+                case 3:
+                    console.log("main_end");
+                    return [2 /*return*/];
             }
         });
     });
 }
-var main = main_org;
+//let main = main_org;
+//main_test();
 main();
 // sqlite3.verbose();
 // var db = new sqlite3.Database(':memory:');

@@ -24,10 +24,10 @@ export class Pagesdb {
                                 Conf.procLog("pagesdb", "cannot create table");
                                 Conf.pdException("pagesdb", e);
                             }
-                            resolve();
+                            resolve("init");
                         });
                     } else {
-                        resolve();
+                        resolve("no");
                     }
                 });
             });
