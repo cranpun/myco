@@ -128,8 +128,9 @@ var Conf = (function () {
     Conf.genPagedirname = function (page, id) {
         var pagefix = page;
         pagefix = pagefix.replace(" ", "");
-        if (pagefix.length > 15) {
-            pagefix = pagefix.substr(0, 13);
+        var len = Conf.params["dirnamelen"];
+        if (pagefix.length > len) {
+            pagefix = pagefix.substr(0, len);
         }
         var zero = ("000" + id).slice(-3);
         pagefix = Conf.sanitpath(zero + "_" + pagefix);
