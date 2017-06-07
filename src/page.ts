@@ -47,6 +47,9 @@ export class Page {
                     });
                     Conf.procLog("img", "save : " + path);
 
+                    let logpath = Conf.logfile(Page.site_title, Page.page_title);
+                    Conf.log(logpath, "pageurl : " + Page.pageurl + "\n");
+
                 } catch (e1) {
                     Conf.pdException("img", "e1" + e1);
                     //Site.nextPage();

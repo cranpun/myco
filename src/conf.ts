@@ -29,7 +29,7 @@ export class Conf {
     /**
      * @return [dldirpath]/[site]/[pagename]
      */
-    static dldatedir(site): string {
+    static dldatedir(site: string): string {
         let p = path.join(Conf.params["dldirpath"], site, Conf.today);
         // ページフォルダの作成
         try {
@@ -55,6 +55,15 @@ export class Conf {
         let zero = ("000" + id).slice(-3);
         let p = path.join(Conf.dlpagedir(site, page), zero + "." + ext);
         return p;
+    }
+    static logfile(site, page): string {
+        let dirpath = Conf.dlpagedir(site, page);
+        return path.join(dirpath, "log.txt");
+    }
+    static log(path, mes) {
+        fs.appendFile(path, mes, () => {
+            // do nothing
+        });
     }
 
     static genPagedirname(page: string, id: number) {

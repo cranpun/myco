@@ -125,6 +125,15 @@ var Conf = (function () {
         var p = path.join(Conf.dlpagedir(site, page), zero + "." + ext);
         return p;
     };
+    Conf.logfile = function (site, page) {
+        var dirpath = Conf.dlpagedir(site, page);
+        return path.join(dirpath, "log.txt");
+    };
+    Conf.log = function (path, mes) {
+        fs.appendFile(path, mes, function () {
+            // do nothing
+        });
+    };
     Conf.genPagedirname = function (page, id) {
         var pagefix = page;
         pagefix = pagefix.replace(" ", "");
@@ -280,7 +289,7 @@ var Page = (function () {
         client.download
             .on("ready", function (stream) {
             return __awaiter(this, void 0, void 0, function () {
-                var ext, path_1;
+                var ext, path_1, logpath;
                 return __generator(this, function (_a) {
                     try {
                         // if(client.download.state.queue <= 1) {
@@ -307,6 +316,8 @@ var Page = (function () {
                             fs.writeFileSync(path_1, buffer, "binary");
                         });
                         conf_1.Conf.procLog("img", "save : " + path_1);
+                        logpath = conf_1.Conf.logfile(Page.site_title, Page.page_title);
+                        conf_1.Conf.log(logpath, "pageurl : " + Page.pageurl + "\n");
                     }
                     catch (e1) {
                         conf_1.Conf.pdException("img", "e1" + e1);
