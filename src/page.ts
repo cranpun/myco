@@ -78,14 +78,14 @@ export class Page {
             p.then(async (result: client.FetchResult) => {
                 try {
                     Page.page_title = Conf.genPagedirname(result.$("title").text(), Page.id);
-                    Conf.procLog("page", "dl : " + result.$("title").text() + " : " + this.pageurl);
-                    //console.log(result.$("img").length);
+                    //Conf.procLog("page", "dl : " + result.$("title").text() + " : " + this.pageurl);
+
                     let imgs = result.$("img");
+                    
                     if(imgs.length > Conf.params["skipimgcnt"]) {
                         Conf.procLog("page", "dlimg : " + imgs.length);
-                        client.download.clearCache();
-                        imgs.download();
-                        //Site.nextPage(); // for test
+                        //imgs.download();
+                        Site.nextPage(); // for test
                     } else {
                         // 画像がなければ次へ。
                         Conf.procLog("page", "noimg");

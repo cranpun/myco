@@ -26,7 +26,9 @@ export class Site {
                         let a = as[i];
                         let href = a.attribs["href"];
                         if (href !== undefined) {
-                            let pageurl = url.resolve(Site.site["url"], href);
+                            let pageurl_org = url.resolve(Site.site["url"], href);
+                            // #以下は除く
+                            let pageurl = pageurl_org.split("#")[0];
                             if (pageurl.indexOf("javascript") < 0) {
                                 Conf.procLog("site", "for: " + pageurl);
                                 if (await Pagesdb.noPage(pageurl)) {

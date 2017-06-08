@@ -130,9 +130,9 @@ var Conf = (function () {
         return path.join(dirpath, "log.txt");
     };
     Conf.log = function (path, mes) {
-        fs.appendFile(path, mes, function () {
-            // do nothing
-        });
+        // fs.appendFile(path, mes, () => {
+        //     // do nothing
+        // });
     };
     Conf.genPagedirname = function (page, id) {
         var pagefix = page;
@@ -176,25 +176,9 @@ var Conf = (function () {
     };
     Conf.sanitpath = function (str) {
         var ret = str;
-        var xchars = [
-            " ",
-            "\\\\",
-            "\\/",
-            "\:",
-            "\\*",
-            "\\?",
-            "\"",
-            "<",
-            ">",
-            "\\|",
-            "\\.",
-            "\\,",
-            "\\r",
-            "\\n",
-        ];
-        for (var _i = 0, xchars_1 = xchars; _i < xchars_1.length; _i++) {
-            var x = xchars_1[_i];
-            ret = ret.replace(new RegExp(x, 'g'), "");
+        for (var _i = 0, _a = Conf.escapes; _i < _a.length; _i++) {
+            var x = _a[_i];
+            ret = ret.replace(x, "");
         }
         if (ret != str) {
             Conf.procLog("replace", str + " -> " + ret);
@@ -214,22 +198,41 @@ var Conf = (function () {
         }
     };
     Conf.procLog = function (tag, mes) {
-        var tags = [
-            "sites",
-            "site",
-            "page",
-            //"pagesdb",
-            "img",
-        ];
-        if (tags.indexOf(tag) >= 0) {
-            console.log("[" + tag + "]" + mes);
-        }
+        // let tags = [
+        //     "sites",
+        //     "site",
+        //     //"page",
+        //     //"pagesdb",
+        //     //"img",
+        // ];
+        // if (tags.indexOf(tag) >= 0) {
+        //     console.log("[" + tag + "]" + mes);
+        // }
     };
     return Conf;
 }());
 Conf.timeout = 3 * 1000; // msec
 //static ignorelength: number = 300 * 1000; // バイト
 Conf.ignorelength = 0 * 1000; // バイト
+Conf.escapes = [
+    new RegExp(" ", 'g'),
+    new RegExp("\\\\", 'g'),
+    new RegExp("\\/", 'g'),
+    new RegExp("\:", 'g'),
+    new RegExp("\\*", 'g'),
+    new RegExp("\\?", 'g'),
+    new RegExp("\"", 'g'),
+    new RegExp("<", 'g'),
+    new RegExp(">", 'g'),
+    new RegExp("\\|", 'g'),
+    new RegExp("\\.", 'g'),
+    new RegExp("\\,", 'g'),
+    new RegExp("\\r", 'g'),
+    new RegExp("\\n", 'g'),
+    new RegExp("%", 'g'),
+    new RegExp("~", 'g'),
+    new RegExp("&", 'g'),
+];
 exports.Conf = Conf;
 
 
@@ -350,13 +353,11 @@ var Page = (function () {
                 return __generator(this, function (_a) {
                     try {
                         Page.page_title = conf_1.Conf.genPagedirname(result.$("title").text(), Page.id);
-                        conf_1.Conf.procLog("page", "dl : " + result.$("title").text() + " : " + this.pageurl);
                         imgs = result.$("img");
                         if (imgs.length > conf_1.Conf.params["skipimgcnt"]) {
                             conf_1.Conf.procLog("page", "dlimg : " + imgs.length);
-                            client.download.clearCache();
-                            imgs.download();
-                            //Site.nextPage(); // for test
+                            //imgs.download();
+                            site_1.Site.nextPage(); // for test
                         }
                         else {
                             // 画像がなければ次へ。
@@ -544,7 +545,7 @@ var Site = (function () {
         try {
             var p = client.fetch(Site.site["url"]);
             p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
-                var as, i, a, href, pageurl, e_1;
+                var as, i, a, href, pageurl_org, pageurl, e_1;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -560,7 +561,8 @@ var Site = (function () {
                             a = as[i];
                             href = a.attribs["href"];
                             if (!(href !== undefined)) return [3 /*break*/, 5];
-                            pageurl = url.resolve(Site.site["url"], href);
+                            pageurl_org = url.resolve(Site.site["url"], href);
+                            pageurl = pageurl_org.split("#")[0];
                             if (!(pageurl.indexOf("javascript") < 0)) return [3 /*break*/, 5];
                             conf_1.Conf.procLog("site", "for: " + pageurl);
                             return [4 /*yield*/, pagesdb_1.Pagesdb.noPage(pageurl)];

@@ -61,9 +61,9 @@ export class Conf {
         return path.join(dirpath, "log.txt");
     }
     static log(path, mes) {
-        fs.appendFile(path, mes, () => {
-            // do nothing
-        });
+        // fs.appendFile(path, mes, () => {
+        //     // do nothing
+        // });
     }
 
     static genPagedirname(page: string, id: number) {
@@ -109,26 +109,29 @@ export class Conf {
         return ret;
     }
 
+    private static escapes = [
+            new RegExp(" ", 'g'),
+            new RegExp("\\\\", 'g'),
+            new RegExp("\\/", 'g'),
+            new RegExp("\:", 'g'),
+            new RegExp("\\*", 'g'),
+            new RegExp("\\?", 'g'),
+            new RegExp("\"", 'g'),
+            new RegExp("<", 'g'),
+            new RegExp(">", 'g'),
+            new RegExp("\\|", 'g'),
+            new RegExp("\\.", 'g'),
+            new RegExp("\\,", 'g'),
+            new RegExp("\\r", 'g'),
+            new RegExp("\\n", 'g'),
+            new RegExp("%", 'g'),
+            new RegExp("~", 'g'),
+            new RegExp("&", 'g'),
+    ];
     static sanitpath(str) {
         let ret = str;
-        let xchars: string[] = [
-            " ",
-            "\\\\",
-            "\\/",
-            "\:",
-            "\\*",
-            "\\?",
-            "\"",
-            "<",
-            ">",
-            "\\|",
-            "\\.",
-            "\\,",
-            "\\r",
-            "\\n",
-        ];
-        for (let x of xchars) {
-            ret = ret.replace(new RegExp(x, 'g'), "");
+        for (let x of Conf.escapes) {
+            ret = ret.replace(x, "");
         }
         if (ret != str) {
             Conf.procLog("replace", str + " -> " + ret);
@@ -150,16 +153,16 @@ export class Conf {
     }
 
     static procLog(tag: string, mes: string) {
-        let tags = [
-            "sites",
-            "site",
-            "page",
-            //"pagesdb",
-            "img",
-        ];
-        if (tags.indexOf(tag) >= 0) {
-            console.log("[" + tag + "]" + mes);
-        }
+        // let tags = [
+        //     "sites",
+        //     "site",
+        //     //"page",
+        //     //"pagesdb",
+        //     //"img",
+        // ];
+        // if (tags.indexOf(tag) >= 0) {
+        //     console.log("[" + tag + "]" + mes);
+        // }
     }
 
 }
