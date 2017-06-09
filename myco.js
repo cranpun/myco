@@ -242,6 +242,128 @@ exports.Conf = Conf;
 
 "use strict";
 
+Object.defineProperty(exports, "__esModule", { value: true });
+var sqlite3 = __webpack_require__(10);
+var moment = __webpack_require__(7);
+var conf_1 = __webpack_require__(0);
+//sqlite3.verbose();
+var Pagesdb = (function () {
+    function Pagesdb() {
+    }
+    Pagesdb.init = function () {
+        var _this = this;
+        return new Promise(function (resolve) {
+            sqlite3.verbose();
+            _this.db = new sqlite3.Database(Pagesdb.filename);
+            var db = _this.db;
+            var exists = 0;
+            db.serialize(function () {
+                db.all("SELECT * FROM sqlite_master WHERE name='" + Pagesdb.tabname + "' AND type='table'", function (err, rows) {
+                    exists = rows.length;
+                    if (exists <= 0) {
+                        db.run("CREATE TABLE " + Pagesdb.tabname + " (url TEXT PRIMARY KEY, created TEXT)", function (e) {
+                            if (e != null) {
+                                conf_1.Conf.procLog("pagesdb", "cannot create table");
+                                conf_1.Conf.pdException("pagesdb", e);
+                            }
+                            resolve("init");
+                        });
+                    }
+                    else {
+                        resolve("no");
+                    }
+                });
+            });
+        });
+    };
+    Pagesdb.putPage = function (url) {
+        return new Promise(function (resolve) {
+            var db = Pagesdb.db;
+            db.serialize(function () {
+                // 登録なのでstateはpre
+                var q = "INSERT INTO " + Pagesdb.tabname + " (url, created) VALUES ('" + url + "', '" + moment().format("YYYY-MM-DD HH:mm:ss") + "')";
+                db.run(q, function (e) {
+                    if (e != null) {
+                        conf_1.Conf.pdException("pagesdb", "err ins : " + e + "  " + q);
+                    }
+                    conf_1.Conf.procLog("pagesdb", "ins : " + q);
+                    resolve();
+                });
+            });
+        });
+    };
+    Pagesdb.noPage = function (url) {
+        return new Promise(function (resolve) {
+            var db = Pagesdb.db;
+            var q = "SELECT * FROM " + Pagesdb.tabname + " WHERE url = '" + url + "'";
+            db.serialize(function () {
+                db.get(q, function (err, row) {
+                    conf_1.Conf.procLog("pagesdb", "has ? " + q);
+                    if (err == null) {
+                        if (row == undefined) {
+                            resolve(true); // 行が見つからなかったので初めて。
+                        }
+                        else {
+                            resolve(false); // 行が見つかったので既知。
+                        }
+                    }
+                    else {
+                        conf_1.Conf.pdException("pagesdb", err);
+                        resolve(false); // エラーは既知扱い
+                    }
+                });
+            });
+        });
+    };
+    Pagesdb.close = function () {
+        Pagesdb.db.close();
+    };
+    Pagesdb.run = function (q) {
+        return new Promise(function (resolve) {
+            var db = Pagesdb.db;
+            db.serialize(function () {
+                db.run(q, function (e) {
+                    if (e != null) {
+                        conf_1.Conf.pdException("pagesdb", "err ins : " + e + "  " + q);
+                    }
+                    conf_1.Conf.procLog("pagesdb", "ins : " + q);
+                    resolve();
+                });
+            });
+        });
+    };
+    Pagesdb.all = function (q) {
+        return new Promise(function (resolve) {
+            var db = Pagesdb.db;
+            db.serialize(function () {
+                db.all(q, function (err, rows) {
+                    for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
+                        var row = rows_1[_i];
+                        console.log(row);
+                    }
+                });
+            });
+        });
+    };
+    return Pagesdb;
+}());
+Pagesdb.tabname = "pages";
+Pagesdb.filename = "pages.db";
+exports.Pagesdb = Pagesdb;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require("cheerio-httpcli");
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -279,7 +401,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var conf_1 = __webpack_require__(0);
-var client = __webpack_require__(3);
+var client = __webpack_require__(2);
 var fs = __webpack_require__(6);
 var site_1 = __webpack_require__(4);
 var Page = (function () {
@@ -390,103 +512,6 @@ exports.Page = Page;
 
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var sqlite3 = __webpack_require__(10);
-var moment = __webpack_require__(7);
-var conf_1 = __webpack_require__(0);
-//sqlite3.verbose();
-var Pagesdb = (function () {
-    function Pagesdb() {
-    }
-    Pagesdb.init = function () {
-        var _this = this;
-        return new Promise(function (resolve) {
-            sqlite3.verbose();
-            _this.db = new sqlite3.Database(Pagesdb.filename);
-            var db = _this.db;
-            var exists = 0;
-            db.serialize(function () {
-                db.all("SELECT * FROM sqlite_master WHERE name='" + Pagesdb.tabname + "' AND type='table'", function (err, rows) {
-                    exists = rows.length;
-                    if (exists <= 0) {
-                        db.run("CREATE TABLE " + Pagesdb.tabname + " (url TEXT PRIMARY KEY, created TEXT)", function (e) {
-                            if (e != null) {
-                                conf_1.Conf.procLog("pagesdb", "cannot create table");
-                                conf_1.Conf.pdException("pagesdb", e);
-                            }
-                            resolve("init");
-                        });
-                    }
-                    else {
-                        resolve("no");
-                    }
-                });
-            });
-        });
-    };
-    Pagesdb.putPage = function (url) {
-        var _this = this;
-        return new Promise(function (resolve) {
-            var db = _this.db;
-            db.serialize(function () {
-                // 登録なのでstateはpre
-                var q = "INSERT INTO " + Pagesdb.tabname + " (url, created) VALUES ('" + url + "', '" + moment().format("YYYY-MM-DD HH:mm:ss") + "')";
-                db.run(q, function (e) {
-                    if (e != null) {
-                        conf_1.Conf.pdException("pagesdb", "err ins : " + e + "  " + q);
-                    }
-                    conf_1.Conf.procLog("pagesdb", "ins : " + q);
-                    resolve();
-                });
-            });
-        });
-    };
-    Pagesdb.noPage = function (url) {
-        var _this = this;
-        return new Promise(function (resolve) {
-            var db = _this.db;
-            var q = "SELECT * FROM " + Pagesdb.tabname + " WHERE url = '" + url + "'";
-            db.serialize(function () {
-                db.get(q, function (err, row) {
-                    conf_1.Conf.procLog("pagesdb", "has ? " + q);
-                    if (err == null) {
-                        if (row == undefined) {
-                            resolve(true); // 行が見つからなかったので初めて。
-                        }
-                        else {
-                            resolve(false); // 行が見つかったので既知。
-                        }
-                    }
-                    else {
-                        conf_1.Conf.pdException("pagesdb", err);
-                        resolve(false); // エラーは既知扱い
-                    }
-                });
-            });
-        });
-    };
-    Pagesdb.close = function () {
-        this.db.close();
-    };
-    return Pagesdb;
-}());
-Pagesdb.tabname = "pages";
-Pagesdb.filename = "pages.db";
-exports.Pagesdb = Pagesdb;
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-module.exports = require("cheerio-httpcli");
-
-/***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -528,10 +553,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var client = __webpack_require__(3);
-var page_1 = __webpack_require__(1);
+var client = __webpack_require__(2);
+var page_1 = __webpack_require__(3);
 var conf_1 = __webpack_require__(0);
-var pagesdb_1 = __webpack_require__(2);
+var pagesdb_1 = __webpack_require__(1);
 var sites_1 = __webpack_require__(5);
 var url = __webpack_require__(11);
 var Site = (function () {
@@ -672,9 +697,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var conf_1 = __webpack_require__(0);
 var site_1 = __webpack_require__(4);
-var client = __webpack_require__(3);
-var pagesdb_1 = __webpack_require__(2);
-var page_1 = __webpack_require__(1);
+var client = __webpack_require__(2);
+var pagesdb_1 = __webpack_require__(1);
+var page_1 = __webpack_require__(3);
 var Sites = (function () {
     function Sites() {
     }
@@ -785,48 +810,16 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var sites_1 = __webpack_require__(5);
-var conf_1 = __webpack_require__(0);
-var page_1 = __webpack_require__(1);
-var pagesdb_1 = __webpack_require__(2);
-// function delay(milliseconds: number) {
-//     return new Promise<void>(resolve => {
-//         resolve();
-//         //setTimeout(resolve, milliseconds);
-//     });
-// }
-// async function dramaticWelcome() {
-//     console.log("Hello");
-//     for (let i = 0; i < 3; i++) {
-//         await delay(500);
-//         console.log(".");
-//     }
-//     console.log("World!");
-// }
-// dramaticWelcome();
-// function wait(n: number) {
-//     return new Promise(done => setTimeout(() => done(n), n));
-// }
-// async function main() {
-//     console.log("start");
-//     for (var i=0; i<10; i++) {
-//         await wait(1000);
-//         console.log("next");
-//     }
-// }
+var pagesdb_1 = __webpack_require__(1);
 function main_test() {
     return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, conf_1.Conf.init()];
-                case 1:
-                    _a.sent();
-                    return [4 /*yield*/, pagesdb_1.Pagesdb.init()];
-                case 2:
-                    _a.sent();
-                    page_1.Page.init();
-                    page_1.Page.download("hogehoge", "https://www.google.co.jp/setprefs?safeui=on&sig=0_KY3D0pQEFdnsVeipyvcaVk_hiTY%3D&prev=https://www.google.co.jp/search?q%3D%25E6%2597%25A5%25E6%259C%25AC%25E3%2582%25A2%25E3%2583%25AB%25E3%2583%2597%25E3%2582%25B9%26oq%3D%25E6%2597%25A5%25E6%259C%25AC%25E3%2582%25A2%25E3%2583%25AB%25E3%2583%2597%25E3%2582%25B9%26aqs%3Dchrome..69i57j69i60l3j69i65.2169j0j9%26sourceid%3Dchrome%26ie%3DUTF-8", 1);
-                    return [2 /*return*/];
+        var _i, _a, a;
+        return __generator(this, function (_b) {
+            for (_i = 0, _a = process.argv; _i < _a.length; _i++) {
+                a = _a[_i];
+                console.log(a);
             }
+            return [2 /*return*/];
         });
     });
 }
@@ -836,18 +829,53 @@ function main() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
+                    _a.trys.push([0, 4, , 5]);
+                    if (!(process.argv.length > 2)) return [3 /*break*/, 1];
+                    // SQLモード
+                    main_sqlcmd(process.argv[2], process.argv[3]);
+                    return [3 /*break*/, 3];
+                case 1:
                     console.log("main_start");
                     return [4 /*yield*/, sites_1.Sites.init()];
-                case 1:
-                    _a.sent();
-                    return [3 /*break*/, 3];
                 case 2:
+                    _a.sent();
+                    console.log("main_end");
+                    _a.label = 3;
+                case 3: return [3 /*break*/, 5];
+                case 4:
                     e_1 = _a.sent();
                     console.log(e_1);
-                    return [3 /*break*/, 3];
-                case 3:
-                    console.log("main_end");
+                    return [3 /*break*/, 5];
+                case 5: return [2 /*return*/];
+            }
+        });
+    });
+}
+function main_sqlcmd(cmd, val) {
+    return __awaiter(this, void 0, void 0, function () {
+        var q;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    q = "";
+                    return [4 /*yield*/, pagesdb_1.Pagesdb.init()];
+                case 1:
+                    _a.sent();
+                    if (cmd == "select") {
+                        q += "SELECT * FROM pages WHERE strftime('%Y-%m-%d', created) = '" + val + "';";
+                        pagesdb_1.Pagesdb.all(q);
+                    }
+                    else if (cmd == "delete") {
+                        q += "DELETE FROM pages WHERE strftime('%Y-%m-%d', created) = '" + val + "';";
+                        pagesdb_1.Pagesdb.run(q);
+                    }
+                    else if (cmd == "search") {
+                        q += "SELECT * FROM pages WHERE url LIKE '%" + val + "%';";
+                        pagesdb_1.Pagesdb.all(q);
+                    }
+                    else {
+                        console.log("error : could not build query.");
+                    }
                     return [2 /*return*/];
             }
         });
@@ -856,20 +884,6 @@ function main() {
 //let main = main_org;
 //main_test();
 main();
-// sqlite3.verbose();
-// var db = new sqlite3.Database(':memory:');
-// db.serialize(function() {
-//   db.run("CREATE TABLE lorem (info TEXT)");
-//   var stmt = db.prepare("INSERT INTO lorem VALUES (?)");
-//   for (var i = 0; i < 10; i++) {
-//       stmt.run("Ipsum " + i);
-//   }
-//   stmt.finalize();
-//   db.each("SELECT rowid AS id, info FROM lorem", function(err, row) {
-//       console.log(row.id + ": " + row.info);
-//   });
-// });
-// db.close(); 
 
 
 /***/ }),

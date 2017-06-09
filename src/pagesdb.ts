@@ -36,7 +36,7 @@ export class Pagesdb {
 
     static putPage(url: string) {
         return new Promise(resolve => {
-            let db = this.db;
+            let db = Pagesdb.db;
             db.serialize(() => {
                 // 登録なのでstateはpre
                 let q = "INSERT INTO " + Pagesdb.tabname + " (url, created) VALUES ('" + url + "', '" + moment().format("YYYY-MM-DD HH:mm:ss") + "')";
@@ -53,7 +53,7 @@ export class Pagesdb {
 
     static noPage(url: string) {
         return new Promise(resolve => {
-            let db = this.db;
+            let db = Pagesdb.db;
             let q = "SELECT * FROM " + Pagesdb.tabname + " WHERE url = '" + url + "'";
             db.serialize(() => {
                 db.get(q, (err: Error, row: any) => {
@@ -73,6 +73,32 @@ export class Pagesdb {
         });
     }
     static close() {
-        this.db.close();
+        Pagesdb.db.close();
+    }
+    static run(q: string): Promise<any> {
+        return new Promise(resolve => {
+            let db = Pagesdb.db;
+            db.serialize(() => {
+                db.run(q, (e) => {
+                    if (e != null) {
+                        Conf.pdException("pagesdb", "err ins : " + e + "  " + q);
+                    }
+                    Conf.procLog("pagesdb", "ins : " + q);
+                    resolve();
+                });
+            });
+        });
+    }
+    static all(q: string): Promise<any> {
+        return new Promise(resolve => {
+            let db = Pagesdb.db;
+            db.serialize(() => {
+                db.all(q, (err: Error, rows: any) => {
+                    for(let row of rows) {
+                        console.log(row);
+                    }
+                });
+            });
+        });
     }
 }
