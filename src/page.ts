@@ -84,8 +84,8 @@ export class Page {
                     
                     if(imgs.length > Conf.params["skipimgcnt"]) {
                         Conf.procLog("page", "dlimg : " + imgs.length);
-                        //imgs.download();
-                        Site.nextPage(); // for test
+                        imgs.download();
+                        //Site.nextPage(); // for test
                     } else {
                         // 画像がなければ次へ。
                         Conf.procLog("page", "noimg");

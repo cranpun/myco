@@ -198,13 +198,16 @@ var Conf = (function () {
         }
     };
     Conf.procLog = function (tag, mes) {
-        var tags = [
-            "sites",
-            "site",
-        ];
-        if (tags.indexOf(tag) >= 0) {
-            console.log("[" + tag + "]" + mes);
-        }
+        // let tags = [
+        //     "sites",
+        //     "site",
+        //     //"page",
+        //     //"pagesdb",
+        //     //"img",
+        // ];
+        // if (tags.indexOf(tag) >= 0) {
+        //     console.log("[" + tag + "]" + mes);
+        // }
     };
     return Conf;
 }());
@@ -353,8 +356,8 @@ var Page = (function () {
                         imgs = result.$("img");
                         if (imgs.length > conf_1.Conf.params["skipimgcnt"]) {
                             conf_1.Conf.procLog("page", "dlimg : " + imgs.length);
-                            //imgs.download();
-                            site_1.Site.nextPage(); // for test
+                            imgs.download();
+                            //Site.nextPage(); // for test
                         }
                         else {
                             // 画像がなければ次へ。
@@ -596,9 +599,10 @@ var Site = (function () {
     Site.nextPage = function () {
         if (Site.page_urls != undefined) {
             if (Site.hasPage()) {
-                conf_1.Conf.procLog("site", "next : " + Site.page_id + "/" + Site.page_urls.length);
+                var page_url = Site.page_urls[Site.page_id];
+                conf_1.Conf.procLog("site", "next : " + Site.page_id + "/" + Site.page_urls.length + " " + page_url);
                 Site.page_id++;
-                page_1.Page.download(Site.site["title"], Site.page_urls[Site.page_id], Site.page_id);
+                page_1.Page.download(Site.site["title"], page_url, Site.page_id);
             }
             else {
                 // 全部終わったので次のサイトへ。

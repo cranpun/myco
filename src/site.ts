@@ -57,9 +57,10 @@ export class Site {
     static nextPage() {
         if (Site.page_urls != undefined) {
             if (Site.hasPage()) {
-                Conf.procLog("site", "next : " + Site.page_id + "/" + Site.page_urls.length);
+                let page_url = Site.page_urls[Site.page_id];
+                Conf.procLog("site", "next : " + Site.page_id + "/" + Site.page_urls.length + " " + page_url);
                 Site.page_id++;
-                Page.download(Site.site["title"], Site.page_urls[Site.page_id], Site.page_id);
+                Page.download(Site.site["title"], page_url, Site.page_id);
             } else {
                 // 全部終わったので次のサイトへ。
                 Conf.procLog("site", "end");

@@ -153,16 +153,16 @@ export class Conf {
     }
 
     static procLog(tag: string, mes: string) {
-        let tags = [
-            "sites",
-            "site",
-            //"page",
-            //"pagesdb",
-            //"img",
-        ];
-        if (tags.indexOf(tag) >= 0) {
-            console.log("[" + tag + "]" + mes);
-        }
+        // let tags = [
+        //     "sites",
+        //     "site",
+        //     //"page",
+        //     //"pagesdb",
+        //     //"img",
+        // ];
+        // if (tags.indexOf(tag) >= 0) {
+        //     console.log("[" + tag + "]" + mes);
+        // }
     }
 
 }
