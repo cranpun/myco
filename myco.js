@@ -202,6 +202,8 @@ var Conf = (function () {
             "sites",
             "site",
             "page",
+            //"pagesdb",
+            "img",
         ];
         if (tags.indexOf(tag) >= 0) {
             console.log("[" + tag + "]" + mes);
