@@ -476,21 +476,21 @@ var Page = (function () {
                             imgs.download();
                             polling_1 = function () {
                                 var cnts = client.download.state.complete + client.download.state.error;
-                                if (cnts < Page.imgcnts) {
-                                    // ダウンロード中
-                                    conf_1.Conf.procLog("page", "polling " + Page.page_title + " : " + JSON.stringify(client.download.state));
-                                    var wait = parseInt(conf_1.Conf.params["pollingmsec"]);
-                                    Page.pollingcnts++;
-                                    setTimeout(polling_1, wait); // ポーリング
-                                }
-                                else if (Page.pollingcnts > conf_1.Conf.params["pollingcnts"]) {
+                                if (Page.pollingcnts > conf_1.Conf.params["pollingcnts"]) {
                                     // ポーリングが規定回数を超えたら強制的に次へ。
                                     conf_1.Conf.procLog("page", "polling max : " + Page.page_title);
                                     site_1.Site.nextPage();
                                 }
+                                else if (cnts < Page.imgcnts) {
+                                    // ダウンロード中
+                                    conf_1.Conf.procLog("page", "polling " + Page.page_title + " : " + cnts + "/" + Page.imgcnts + " : poll " + Page.pollingcnts + " : " + JSON.stringify(client.download.state));
+                                    var wait = parseInt(conf_1.Conf.params["pollingmsec"]);
+                                    Page.pollingcnts++;
+                                    setTimeout(polling_1, wait); // ポーリング
+                                }
                                 else {
                                     // 終わったので次へ
-                                    conf_1.Conf.procLog("page", "end" + Page.page_title);
+                                    conf_1.Conf.procLog("page", "end" + Page.page_title + " " + cnts + "/" + Page.imgcnts + JSON.stringify(client.download.state));
                                     site_1.Site.nextPage();
                                 }
                             };
@@ -796,11 +796,9 @@ var Sites = (function () {
                 }
                 else {
                     if (site_1.Site.hasPage() == false) {
-                        if (client.download.state.queue <= 0) {
-                            // 全部終わったのでクローズ。
-                            //Pagesdb.close();
-                            conf_1.Conf.procLog("sites", "end...program done");
-                        }
+                        // 全部終わったのでクローズ。
+                        //Pagesdb.close();
+                        conf_1.Conf.procLog("sites", "end...wait download");
                     }
                 }
                 return [2 /*return*/];

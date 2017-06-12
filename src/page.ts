@@ -93,16 +93,16 @@ export class Page {
                         // ダウンロードが終わるまでポーリング
                         let polling = () => {
                             let cnts = client.download.state.complete + client.download.state.error;
-                            if (cnts < Page.imgcnts) {
-                                // ダウンロード中
-                                Conf.procLog("page", "polling " + Page.page_title + " : " + JSON.stringify(client.download.state));
-                                let wait = parseInt(Conf.params["pollingmsec"]);
-                                Page.pollingcnts++;
-                                setTimeout(polling, wait); // ポーリング
-                            } else if(Page.pollingcnts > Conf.params["pollingcnts"]) {
+                            if(Page.pollingcnts > Conf.params["pollingcnts"]) {
                                 // ポーリングが規定回数を超えたら強制的に次へ。
                                 Conf.procLog("page", "polling max : " + Page.page_title);
                                 Site.nextPage();
+                            } else if (cnts < Page.imgcnts) {
+                                // ダウンロード中
+                                Conf.procLog("page", "polling " + Page.page_title + " : " + cnts + "/" + Page.imgcnts + " : poll " + Page.pollingcnts + " : " + JSON.stringify(client.download.state));
+                                let wait = parseInt(Conf.params["pollingmsec"]);
+                                Page.pollingcnts++;
+                                setTimeout(polling, wait); // ポーリング
                             } else {
                                 // 終わったので次へ
                                 Conf.procLog("page", "end" + Page.page_title + " " + cnts + "/" + Page.imgcnts + JSON.stringify(client.download.state));
