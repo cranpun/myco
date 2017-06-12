@@ -13,6 +13,8 @@ export class Page {
     private static id: number;
     private static imgid: number;
     private static page_title: string;
+    private static imgcnts: number;
+    private static pollingcnts: number;
 
     static init() {
         // 画像ダウンロード設定
@@ -53,7 +55,7 @@ export class Page {
                 } catch (e1) {
                     Conf.pdException("img", "e1" + e1);
                     //Site.nextPage();
-                } 
+                }
             });
         client.download.on("error", function (err) {
             Conf.pdException("page", " img err : " + err);
@@ -61,7 +63,7 @@ export class Page {
         });
         client.download.on("end", function () {
             Conf.procLog("img", "end");
-            Site.nextPage(); // このページのダウンロードが終わったので次へ。
+            //Site.nextPage(); // このページのダウンロードが終わったので次へ。
         });
     }
 
@@ -81,9 +83,75 @@ export class Page {
                     //Conf.procLog("page", "dl : " + result.$("title").text() + " : " + this.pageurl);
 
                     let imgs = result.$("img");
-                    
-                    if(imgs.length > Conf.params["skipimgcnt"]) {
-                        Conf.procLog("page", "dlimg : " + imgs.length);
+
+                    if (imgs.length > Conf.params["skipimgcnt"]) {
+                        Page.imgcnts = imgs.length;
+                        Page.pollingcnts = 0;
+                        Conf.procLog("page", "dlimg " + Page.page_title + " : " + Page.imgcnts);
+                        imgs.download();
+                        
+                        // ダウンロードが終わるまでポーリング
+                        let polling = () => {
+                            let cnts = client.download.state.complete + client.download.state.error;
+                            if (cnts < Page.imgcnts) {
+                                // ダウンロード中
+                                Conf.procLog("page", "polling " + Page.page_title + " : " + JSON.stringify(client.download.state));
+                                let wait = parseInt(Conf.params["pollingmsec"]);
+                                Page.pollingcnts++;
+                                setTimeout(polling, wait); // ポーリング
+                            } else if(Page.pollingcnts > Conf.params["pollingcnts"]) {
+                                // ポーリングが規定回数を超えたら強制的に次へ。
+                                Conf.procLog("page", "polling max : " + Page.page_title);
+                                Site.nextPage();
+                            } else {
+                                // 終わったので次へ
+                                Conf.procLog("page", "end" + Page.page_title + " " + cnts + "/" + Page.imgcnts + JSON.stringify(client.download.state));
+                                Site.nextPage();
+                            }
+                        };
+                        polling();
+                        //Site.nextPage(); // for test
+                    } else {
+                        // 画像がなければ次へ。
+                        Conf.procLog("page", "noimg");
+                        Site.nextPage();
+                    }
+                } catch (e2) {
+                    Conf.pdException("page", "e2" + e2);
+                    Site.nextPage();
+                }
+            });
+            p.catch((e3: Error) => {
+                Conf.pdException("page", "e3" + e3);
+                // エラーが起きたので次。
+                Site.nextPage();
+            });
+        } catch (e4) {
+            Conf.pdException("page", "e4" + e4);
+            // エラーが起きたので次。
+            Site.nextPage();
+        }
+    }
+
+    static download_old(site_title: string, pageurl: string, id: number) {
+
+        Page.site_title = site_title;
+        Page.pageurl = pageurl;
+        Page.id = id;
+        Page.imgid = 0;
+
+        try {
+            //Conf.procLog("page", "start:" + this.pageurl);
+            let p = client.fetch(Page.pageurl);
+            p.then(async (result: client.FetchResult) => {
+                try {
+                    Page.page_title = Conf.genPagedirname(result.$("title").text(), Page.id);
+                    //Conf.procLog("page", "dl : " + result.$("title").text() + " : " + this.pageurl);
+
+                    let imgs = result.$("img");
+
+                    if (imgs.length > Conf.params["skipimgcnt"]) {
+                        Conf.procLog("page", "dlimg " + Page.page_title + " : " + imgs.length);
                         imgs.download();
                         //Site.nextPage(); // for test
                     } else {

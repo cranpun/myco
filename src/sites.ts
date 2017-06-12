@@ -28,11 +28,9 @@ export class Sites {
             Sites.site_id++;
         } else {
             if (Site.hasPage() == false) {
-                if (client.download.state.queue <= 0) {
-                    // 全部終わったのでクローズ。
-                    //Pagesdb.close();
-                    Conf.procLog("sites", "end...program done");
-                } 
+                // 全部終わったのでクローズ。
+                //Pagesdb.close();
+                Conf.procLog("sites", "end...wait download");
             }
         }
     }

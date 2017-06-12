@@ -4,6 +4,7 @@
     "ignorebyte" : 300000,
     "skipimgcnt" : 7,
     "timeoutmsec" : 3000,
+    "pollingmsec" : 30000,
     "parallel": 3,
     "sites": [
         {

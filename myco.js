@@ -202,8 +202,6 @@ var Conf = (function () {
             "sites",
             "site",
             "page",
-            //"pagesdb",
-            "img",
         ];
         if (tags.indexOf(tag) >= 0) {
             console.log("[" + tag + "]" + mes);
@@ -453,10 +451,78 @@ var Page = (function () {
         });
         client.download.on("end", function () {
             conf_1.Conf.procLog("img", "end");
-            site_1.Site.nextPage(); // このページのダウンロードが終わったので次へ。
+            //Site.nextPage(); // このページのダウンロードが終わったので次へ。
         });
     };
     Page.download = function (site_title, pageurl, id) {
+        var _this = this;
+        Page.site_title = site_title;
+        Page.pageurl = pageurl;
+        Page.id = id;
+        Page.imgid = 0;
+        try {
+            //Conf.procLog("page", "start:" + this.pageurl);
+            var p = client.fetch(Page.pageurl);
+            p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
+                var imgs, polling_1;
+                return __generator(this, function (_a) {
+                    try {
+                        Page.page_title = conf_1.Conf.genPagedirname(result.$("title").text(), Page.id);
+                        imgs = result.$("img");
+                        if (imgs.length > conf_1.Conf.params["skipimgcnt"]) {
+                            Page.imgcnts = imgs.length;
+                            Page.pollingcnts = 0;
+                            conf_1.Conf.procLog("page", "dlimg " + Page.page_title + " : " + Page.imgcnts);
+                            imgs.download();
+                            polling_1 = function () {
+                                var cnts = client.download.state.complete + client.download.state.error;
+                                if (cnts < Page.imgcnts) {
+                                    // ダウンロード中
+                                    conf_1.Conf.procLog("page", "polling " + Page.page_title + " : " + JSON.stringify(client.download.state));
+                                    var wait = parseInt(conf_1.Conf.params["pollingmsec"]);
+                                    Page.pollingcnts++;
+                                    setTimeout(polling_1, wait); // ポーリング
+                                }
+                                else if (Page.pollingcnts > conf_1.Conf.params["pollingcnts"]) {
+                                    // ポーリングが規定回数を超えたら強制的に次へ。
+                                    conf_1.Conf.procLog("page", "polling max : " + Page.page_title);
+                                    site_1.Site.nextPage();
+                                }
+                                else {
+                                    // 終わったので次へ
+                                    conf_1.Conf.procLog("page", "end" + Page.page_title);
+                                    site_1.Site.nextPage();
+                                }
+                            };
+                            polling_1();
+                            //Site.nextPage(); // for test
+                        }
+                        else {
+                            // 画像がなければ次へ。
+                            conf_1.Conf.procLog("page", "noimg");
+                            site_1.Site.nextPage();
+                        }
+                    }
+                    catch (e2) {
+                        conf_1.Conf.pdException("page", "e2" + e2);
+                        site_1.Site.nextPage();
+                    }
+                    return [2 /*return*/];
+                });
+            }); });
+            p.catch(function (e3) {
+                conf_1.Conf.pdException("page", "e3" + e3);
+                // エラーが起きたので次。
+                site_1.Site.nextPage();
+            });
+        }
+        catch (e4) {
+            conf_1.Conf.pdException("page", "e4" + e4);
+            // エラーが起きたので次。
+            site_1.Site.nextPage();
+        }
+    };
+    Page.download_old = function (site_title, pageurl, id) {
         var _this = this;
         Page.site_title = site_title;
         Page.pageurl = pageurl;
@@ -472,7 +538,7 @@ var Page = (function () {
                         Page.page_title = conf_1.Conf.genPagedirname(result.$("title").text(), Page.id);
                         imgs = result.$("img");
                         if (imgs.length > conf_1.Conf.params["skipimgcnt"]) {
-                            conf_1.Conf.procLog("page", "dlimg : " + imgs.length);
+                            conf_1.Conf.procLog("page", "dlimg " + Page.page_title + " : " + imgs.length);
                             imgs.download();
                             //Site.nextPage(); // for test
                         }
