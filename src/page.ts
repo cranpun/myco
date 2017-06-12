@@ -58,7 +58,7 @@ export class Page {
                 }
             });
         client.download.on("error", function (err) {
-            Conf.pdException("page", " img err : " + err);
+            Conf.pdException("img", " err : " + err);
             //Site.nextPage(); // エラーが起きたので次。
         });
         client.download.on("end", function () {
@@ -92,12 +92,15 @@ export class Page {
                         
                         // ダウンロードが終わるまでポーリング
                         let polling = () => {
-                            let cnts = client.download.state.complete + client.download.state.error;
+                            //let cnts = client.download.state.complete + client.download.state.error;
+                            let cnts = client.download.state.queue;
                             if(Page.pollingcnts > Conf.params["pollingcnts"]) {
                                 // ポーリングが規定回数を超えたら強制的に次へ。
                                 Conf.procLog("page", "polling max : " + Page.page_title);
+                                Page.imgcnts = 0;
+                                Page.pollingcnts = 0;
                                 Site.nextPage();
-                            } else if (cnts < Page.imgcnts) {
+                            } else if (cnts > 0) {
                                 // ダウンロード中
                                 Conf.procLog("page", "polling " + Page.page_title + " : " + cnts + "/" + Page.imgcnts + " : poll " + Page.pollingcnts + " : " + JSON.stringify(client.download.state));
                                 let wait = parseInt(Conf.params["pollingmsec"]);
@@ -105,11 +108,14 @@ export class Page {
                                 setTimeout(polling, wait); // ポーリング
                             } else {
                                 // 終わったので次へ
-                                Conf.procLog("page", "end" + Page.page_title + " " + cnts + "/" + Page.imgcnts + JSON.stringify(client.download.state));
+                                Conf.procLog("page", "end : " + Page.page_title + " " + cnts + "/" + Page.imgcnts + JSON.stringify(client.download.state));
+                                Page.imgcnts = 0;
+                                Page.pollingcnts = 0;
                                 Site.nextPage();
                             }
                         };
-                        polling();
+                        // キューに貯まるのを待つために、ちょっと時間を開ける
+                        setTimeout(polling, 5 * 1000);
                         //Site.nextPage(); // for test
                     } else {
                         // 画像がなければ次へ。

@@ -202,6 +202,8 @@ var Conf = (function () {
             "sites",
             "site",
             "page",
+            //"pagesdb",
+            "img",
         ];
         if (tags.indexOf(tag) >= 0) {
             console.log("[" + tag + "]" + mes);
@@ -446,7 +448,7 @@ var Page = (function () {
             }
         });
         client.download.on("error", function (err) {
-            conf_1.Conf.pdException("page", " img err : " + err);
+            conf_1.Conf.pdException("img", " err : " + err);
             //Site.nextPage(); // エラーが起きたので次。
         });
         client.download.on("end", function () {
@@ -475,13 +477,16 @@ var Page = (function () {
                             conf_1.Conf.procLog("page", "dlimg " + Page.page_title + " : " + Page.imgcnts);
                             imgs.download();
                             polling_1 = function () {
-                                var cnts = client.download.state.complete + client.download.state.error;
+                                //let cnts = client.download.state.complete + client.download.state.error;
+                                var cnts = client.download.state.queue;
                                 if (Page.pollingcnts > conf_1.Conf.params["pollingcnts"]) {
                                     // ポーリングが規定回数を超えたら強制的に次へ。
                                     conf_1.Conf.procLog("page", "polling max : " + Page.page_title);
+                                    Page.imgcnts = 0;
+                                    Page.pollingcnts = 0;
                                     site_1.Site.nextPage();
                                 }
-                                else if (cnts < Page.imgcnts) {
+                                else if (cnts > 0) {
                                     // ダウンロード中
                                     conf_1.Conf.procLog("page", "polling " + Page.page_title + " : " + cnts + "/" + Page.imgcnts + " : poll " + Page.pollingcnts + " : " + JSON.stringify(client.download.state));
                                     var wait = parseInt(conf_1.Conf.params["pollingmsec"]);
@@ -490,11 +495,14 @@ var Page = (function () {
                                 }
                                 else {
                                     // 終わったので次へ
-                                    conf_1.Conf.procLog("page", "end" + Page.page_title + " " + cnts + "/" + Page.imgcnts + JSON.stringify(client.download.state));
+                                    conf_1.Conf.procLog("page", "end : " + Page.page_title + " " + cnts + "/" + Page.imgcnts + JSON.stringify(client.download.state));
+                                    Page.imgcnts = 0;
+                                    Page.pollingcnts = 0;
                                     site_1.Site.nextPage();
                                 }
                             };
-                            polling_1();
+                            // キューに貯まるのを待つために、ちょっと時間を開ける
+                            setTimeout(polling_1, 5 * 1000);
                             //Site.nextPage(); // for test
                         }
                         else {
