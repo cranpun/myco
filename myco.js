@@ -413,44 +413,39 @@ var Page = (function () {
         client.set("timeout", conf_1.Conf.params["timeoutmsec"]);
         client.download
             .on("ready", function (stream) {
-            return __awaiter(this, void 0, void 0, function () {
-                var ext, path_1, logpath;
-                return __generator(this, function (_a) {
-                    try {
-                        // if(client.download.state.queue <= 1) {
-                        //     // ダウンロードが完了したので次へ。
-                        //     Site.nextPage();
-                        // }
-                        conf_1.Conf.procLog("img", "dl(" + Page.page_title + ") " + client.download.state.queue);
-                        if (stream.length < conf_1.Conf.params["ignorebyte"]) {
-                            //Conf.procLog("img", "small : " + stream.length);
-                            stream.end();
-                            return [2 /*return*/]; // 無視するサイズ
-                        }
-                        ext = conf_1.Conf.extType(stream.type);
-                        if (ext == "") {
-                            // 違うタイプのファイルは不要
-                            conf_1.Conf.procLog("img", "notype : " + ext);
-                            stream.end();
-                            return [2 /*return*/];
-                        }
-                        Page.imgid++; // ID発行
-                        path_1 = conf_1.Conf.dlfile(Page.site_title, Page.page_title, ext, Page.imgid);
-                        conf_1.Conf.procLog("img", "rdy : " + stream.url.href);
-                        stream.toBuffer(function (err, buffer) {
-                            fs.writeFileSync(path_1, buffer, "binary");
-                        });
-                        conf_1.Conf.procLog("img", "save : " + path_1);
-                        logpath = conf_1.Conf.logfile(Page.site_title, Page.page_title);
-                        conf_1.Conf.log(logpath, "pageurl : " + Page.pageurl + "\n");
-                    }
-                    catch (e1) {
-                        conf_1.Conf.pdException("img", "e1" + e1);
-                        //Site.nextPage();
-                    }
-                    return [2 /*return*/];
+            try {
+                // if(client.download.state.queue <= 1) {
+                //     // ダウンロードが完了したので次へ。
+                //     Site.nextPage();
+                // }
+                conf_1.Conf.procLog("img", "dl(" + Page.page_title + ") " + client.download.state.queue);
+                if (stream.length < conf_1.Conf.params["ignorebyte"]) {
+                    //Conf.procLog("img", "small : " + stream.length);
+                    stream.end();
+                    return; // 無視するサイズ
+                }
+                //let url = stream.url.href;
+                var ext = conf_1.Conf.extType(stream.type);
+                if (ext == "") {
+                    // 違うタイプのファイルは不要
+                    conf_1.Conf.procLog("img", "notype : " + ext);
+                    stream.end();
+                    return;
+                }
+                Page.imgid++; // ID発行
+                var path_1 = conf_1.Conf.dlfile(Page.site_title, Page.page_title, ext, Page.imgid);
+                conf_1.Conf.procLog("img", "rdy : " + stream.url.href);
+                stream.toBuffer(function (err, buffer) {
+                    fs.writeFileSync(path_1, buffer, "binary");
                 });
-            });
+                conf_1.Conf.procLog("img", "save : " + path_1);
+                var logpath = conf_1.Conf.logfile(Page.site_title, Page.page_title);
+                conf_1.Conf.log(logpath, "pageurl : " + Page.pageurl + "\n");
+            }
+            catch (e1) {
+                conf_1.Conf.pdException("img", "e1" + e1);
+                //Site.nextPage();
+            }
         });
         client.download.on("error", function (err) {
             conf_1.Conf.pdException("page", " img err : " + err);

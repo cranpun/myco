@@ -19,7 +19,7 @@ export class Page {
         client.download.parallel = Conf.params["parallel"];
         client.set("timeout", Conf.params["timeoutmsec"]);
         client.download
-            .on("ready", async function (stream: client.Download.Stream) {
+            .on("ready", function (stream: client.Download.Stream) {
                 try {
                     // if(client.download.state.queue <= 1) {
                     //     // ダウンロードが完了したので次へ。
