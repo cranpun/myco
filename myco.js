@@ -198,16 +198,14 @@ var Conf = (function () {
         }
     };
     Conf.procLog = function (tag, mes) {
-        // let tags = [
-        //     "sites",
-        //     "site",
-        //     //"page",
-        //     //"pagesdb",
-        //     //"img",
-        // ];
-        // if (tags.indexOf(tag) >= 0) {
-        //     console.log("[" + tag + "]" + mes);
-        // }
+        var tags = [
+            "sites",
+            "site",
+            "page",
+        ];
+        if (tags.indexOf(tag) >= 0) {
+            console.log("[" + tag + "]" + mes);
+        }
     };
     return Conf;
 }());
