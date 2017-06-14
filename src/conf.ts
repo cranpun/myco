@@ -156,9 +156,9 @@ export class Conf {
         let tags = [
             "sites",
             "site",
-            "page",
+            //"page",
             //"pagesdb",
-            "img",
+            //"img",
         ];
         if (tags.indexOf(tag) >= 0) {
             console.log("[" + tag + "]" + mes);
