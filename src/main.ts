@@ -64,7 +64,7 @@ function main_count() {
             let pages = fs.readdirSync(datepath);
             pagecnt += pages.length;
         }
-        console.log("[" + site.title + "] " + pagecnt);
+        console.log("[" + site.title + "] \t" + pagecnt);
     }
 }
 

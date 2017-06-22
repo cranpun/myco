@@ -970,7 +970,7 @@ function main_count() {
             var pages = fs.readdirSync(datepath);
             pagecnt += pages.length;
         }
-        console.log("[" + site.title + "] " + pagecnt);
+        console.log("[" + site.title + "] \t" + pagecnt);
     }
 }
 //let main = main_org;
