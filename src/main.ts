@@ -6,9 +6,7 @@ import * as sqlite3 from "sqlite3";
 import * as client from "cheerio-httpcli";
 
 async function main_test() {
-    for (let a of process.argv) {
-        console.log(a);
-    }
+    alert("hogehoge");
 }
 async function main() {
     try {

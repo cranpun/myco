@@ -877,12 +877,8 @@ var sites_1 = __webpack_require__(5);
 var pagesdb_1 = __webpack_require__(1);
 function main_test() {
     return __awaiter(this, void 0, void 0, function () {
-        var _i, _a, a;
-        return __generator(this, function (_b) {
-            for (_i = 0, _a = process.argv; _i < _a.length; _i++) {
-                a = _a[_i];
-                console.log(a);
-            }
+        return __generator(this, function (_a) {
+            alert("hogehoge");
             return [2 /*return*/];
         });
     });
@@ -946,8 +942,8 @@ function main_sqlcmd(cmd, val) {
     });
 }
 //let main = main_org;
-//main_test();
-main();
+main_test();
+//main();
 
 
 /***/ }),
