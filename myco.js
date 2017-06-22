@@ -73,8 +73,8 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var fs = __webpack_require__(6);
-var path = __webpack_require__(9);
+var fs = __webpack_require__(3);
+var path = __webpack_require__(8);
 var moment = __webpack_require__(7);
 var Conf = (function () {
     function Conf() {
@@ -357,6 +357,12 @@ module.exports = require("cheerio-httpcli");
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -399,8 +405,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var conf_1 = __webpack_require__(0);
 var client = __webpack_require__(2);
-var fs = __webpack_require__(6);
-var site_1 = __webpack_require__(4);
+var fs = __webpack_require__(3);
+var site_1 = __webpack_require__(5);
 var Page = (function () {
     function Page() {
     }
@@ -578,7 +584,7 @@ exports.Page = Page;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -620,10 +626,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var client = __webpack_require__(2);
-var page_1 = __webpack_require__(3);
+var page_1 = __webpack_require__(4);
 var conf_1 = __webpack_require__(0);
 var pagesdb_1 = __webpack_require__(1);
-var sites_1 = __webpack_require__(5);
+var sites_1 = __webpack_require__(6);
 var url = __webpack_require__(11);
 var Site = (function () {
     function Site() {
@@ -720,7 +726,7 @@ exports.Site = Site;
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -762,10 +768,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var conf_1 = __webpack_require__(0);
-var site_1 = __webpack_require__(4);
+var site_1 = __webpack_require__(5);
 var client = __webpack_require__(2);
 var pagesdb_1 = __webpack_require__(1);
-var page_1 = __webpack_require__(3);
+var page_1 = __webpack_require__(4);
 var Sites = (function () {
     function Sites() {
     }
@@ -820,12 +826,6 @@ exports.Sites = Sites;
 
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
-module.exports = require("fs");
-
-/***/ }),
 /* 7 */
 /***/ (function(module, exports) {
 
@@ -833,6 +833,12 @@ module.exports = require("moment");
 
 /***/ }),
 /* 8 */
+/***/ (function(module, exports) {
+
+module.exports = require("path");
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -873,8 +879,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var sites_1 = __webpack_require__(5);
+var sites_1 = __webpack_require__(6);
+var conf_1 = __webpack_require__(0);
 var pagesdb_1 = __webpack_require__(1);
+var path = __webpack_require__(8);
+var fs = __webpack_require__(3);
 function main_test() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -890,8 +899,13 @@ function main() {
                 case 0:
                     _a.trys.push([0, 4, , 5]);
                     if (!(process.argv.length > 2)) return [3 /*break*/, 1];
-                    // SQLモード
-                    main_sqlcmd(process.argv[2], process.argv[3]);
+                    if (process.argv[2] == "count") {
+                        main_count();
+                    }
+                    else {
+                        // SQLモード
+                        main_sqlcmd(process.argv[2], process.argv[3]);
+                    }
                     return [3 /*break*/, 3];
                 case 1:
                     console.log("main_start");
@@ -940,16 +954,29 @@ function main_sqlcmd(cmd, val) {
         });
     });
 }
+function main_count() {
+    conf_1.Conf.init();
+    var rootpath = conf_1.Conf.params["dldirpath"];
+    var sites = conf_1.Conf.params["sites"];
+    for (var _i = 0, sites_2 = sites; _i < sites_2.length; _i++) {
+        var site = sites_2[_i];
+        var pagecnt = 0;
+        var sitepath = path.join(rootpath, site.title);
+        // 日付ディレクトリの取得
+        var dates = fs.readdirSync(sitepath);
+        for (var _a = 0, dates_1 = dates; _a < dates_1.length; _a++) {
+            var date = dates_1[_a];
+            var datepath = path.join(sitepath, date);
+            var pages = fs.readdirSync(datepath);
+            pagecnt += pages.length;
+        }
+        console.log("[" + site.title + "] " + pagecnt);
+    }
+}
 //let main = main_org;
 //main_test();
 main();
 
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-module.exports = require("path");
 
 /***/ }),
 /* 10 */
@@ -967,7 +994,7 @@ module.exports = require("url");
 /* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(8);
+module.exports = __webpack_require__(9);
 
 
 /***/ })

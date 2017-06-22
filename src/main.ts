@@ -2,17 +2,23 @@ import { Sites } from "./sites";
 import { Conf } from "./conf";
 import { Page } from "./page";
 import { Pagesdb } from "./pagesdb";
+import * as path from "path";
 import * as sqlite3 from "sqlite3";
 import * as client from "cheerio-httpcli";
+import * as fs from "fs";
 
 async function main_test() {
-    
+
 }
 async function main() {
     try {
         if (process.argv.length > 2) {
-            // SQLモード
-            main_sqlcmd(process.argv[2], process.argv[3]);
+            if (process.argv[2] == "count") {
+                main_count();
+            } else {
+                // SQLモード
+                main_sqlcmd(process.argv[2], process.argv[3]);
+            }
         } else {
             console.log("main_start");
             await Sites.init();
@@ -37,6 +43,28 @@ async function main_sqlcmd(cmd: string, val: string) {
         Pagesdb.all(q);
     } else {
         console.log("error : could not build query.");
+    }
+}
+
+function main_count() {
+    Conf.init();
+
+    let rootpath = Conf.params["dldirpath"];
+    let sites = Conf.params["sites"];
+
+
+
+    for(let site of sites) {
+        let pagecnt = 0;
+        let sitepath = path.join(rootpath, site.title);
+        // 日付ディレクトリの取得
+        let dates = fs.readdirSync(sitepath);
+        for(let date of dates) {
+            let datepath = path.join(sitepath, date);
+            let pages = fs.readdirSync(datepath);
+            pagecnt += pages.length;
+        }
+        console.log("[" + site.title + "] " + pagecnt);
     }
 }
 
