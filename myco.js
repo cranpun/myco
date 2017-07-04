@@ -203,30 +203,30 @@ var Conf = (function () {
             console.log("[" + tag + "]" + mes);
         }
     };
+    Conf.timeout = 3 * 1000; // msec
+    //static ignorelength: number = 300 * 1000; // バイト
+    Conf.ignorelength = 0 * 1000; // バイト
+    Conf.escapes = [
+        new RegExp(" ", 'g'),
+        new RegExp("\\\\", 'g'),
+        new RegExp("\\/", 'g'),
+        new RegExp("\:", 'g'),
+        new RegExp("\\*", 'g'),
+        new RegExp("\\?", 'g'),
+        new RegExp("\"", 'g'),
+        new RegExp("<", 'g'),
+        new RegExp(">", 'g'),
+        new RegExp("\\|", 'g'),
+        new RegExp("\\.", 'g'),
+        new RegExp("\\,", 'g'),
+        new RegExp("\\r", 'g'),
+        new RegExp("\\n", 'g'),
+        new RegExp("%", 'g'),
+        new RegExp("~", 'g'),
+        new RegExp("&", 'g'),
+    ];
     return Conf;
 }());
-Conf.timeout = 3 * 1000; // msec
-//static ignorelength: number = 300 * 1000; // バイト
-Conf.ignorelength = 0 * 1000; // バイト
-Conf.escapes = [
-    new RegExp(" ", 'g'),
-    new RegExp("\\\\", 'g'),
-    new RegExp("\\/", 'g'),
-    new RegExp("\:", 'g'),
-    new RegExp("\\*", 'g'),
-    new RegExp("\\?", 'g'),
-    new RegExp("\"", 'g'),
-    new RegExp("<", 'g'),
-    new RegExp(">", 'g'),
-    new RegExp("\\|", 'g'),
-    new RegExp("\\.", 'g'),
-    new RegExp("\\,", 'g'),
-    new RegExp("\\r", 'g'),
-    new RegExp("\\n", 'g'),
-    new RegExp("%", 'g'),
-    new RegExp("~", 'g'),
-    new RegExp("&", 'g'),
-];
 exports.Conf = Conf;
 
 
@@ -351,10 +351,10 @@ var Pagesdb = (function () {
             });
         });
     };
+    Pagesdb.tabname = "pages";
+    Pagesdb.filename = "pages.db";
     return Pagesdb;
 }());
-Pagesdb.tabname = "pages";
-Pagesdb.filename = "pages.db";
 exports.Pagesdb = Pagesdb;
 
 
@@ -443,7 +443,7 @@ var Sites = (function () {
                         // 全部終わったのでクローズ。
                         //Pagesdb.close();
                         conf_1.Conf.procLog("sites", "end...wait download");
-                        console.log("done. success");
+                        console.error("done. success");
                     }
                 }
                 return [2 /*return*/];
@@ -691,7 +691,7 @@ var Page = (function () {
                 var path_1 = conf_1.Conf.dlfile(Page.site_title, Page.page_title, ext, Page.imgid);
                 conf_1.Conf.procLog("img", "rdy : " + stream.url.href);
                 stream.toBuffer(function (err, buffer) {
-                    fs.writeFileSync(path_1, buffer, "binary");
+                    fs.writeFileSync(path_1, buffer);
                 });
                 conf_1.Conf.procLog("img", "save : " + path_1);
                 var logpath = conf_1.Conf.logfile(Page.site_title, Page.page_title);

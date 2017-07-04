@@ -45,7 +45,7 @@ export class Page {
                     let path = Conf.dlfile(Page.site_title, Page.page_title, ext, Page.imgid);
                     Conf.procLog("img", "rdy : " + stream.url.href);
                     stream.toBuffer((err, buffer) => {
-                        fs.writeFileSync(path, buffer, "binary");
+                        fs.writeFileSync(path, buffer);
                     });
                     Conf.procLog("img", "save : " + path);
 

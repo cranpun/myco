@@ -31,7 +31,7 @@ export class Sites {
                 // 全部終わったのでクローズ。
                 //Pagesdb.close();
                 Conf.procLog("sites", "end...wait download");
-                console.log("done. success");
+                console.error("done. success");
             }
         }
     }
