@@ -159,6 +159,7 @@ export class Conf {
             //"page",
             //"pagesdb",
             //"img",
+            "info",
         ];
         if (tags.indexOf(tag) >= 0) {
             console.log("[" + tag + "]" + mes);

@@ -198,6 +198,10 @@ var Conf = (function () {
         var tags = [
             "sites",
             "site",
+            //"page",
+            //"pagesdb",
+            //"img",
+            "info",
         ];
         if (tags.indexOf(tag) >= 0) {
             console.log("[" + tag + "]" + mes);
@@ -674,17 +678,9 @@ var Page = (function () {
                 //     Site.nextPage();
                 // }
                 conf_1.Conf.procLog("img", "dl(" + Page.page_title + ") " + client.download.state.queue);
-                if (stream.length < conf_1.Conf.params["ignorebyte"]) {
-                    //Conf.procLog("img", "small : " + stream.length);
-                    stream.end();
-                    return; // 無視するサイズ
-                }
-                //let url = stream.url.href;
                 var ext = conf_1.Conf.extType(stream.type);
-                if (ext == "") {
-                    // 違うタイプのファイルは不要
-                    conf_1.Conf.procLog("img", "notype : " + ext);
-                    stream.end();
+                if (Page.ignoreImage(stream, ext)) {
+                    // 無視する内容なのでここでおしまい。
                     return;
                 }
                 Page.imgid++; // ID発行
@@ -711,6 +707,31 @@ var Page = (function () {
             //Site.nextPage(); // このページのダウンロードが終わったので次へ。
         });
     };
+    Page.ignoreImage = function (stream, ext) {
+        if (stream.length < conf_1.Conf.params["ignorebyte"]) {
+            //Conf.procLog("img", "small : " + stream.length);
+            stream.end();
+            return true; // 無視するサイズ
+        }
+        //let url = stream.url.href;
+        if (ext == "") {
+            // 違うタイプのファイルは不要
+            //Conf.procLog("img", "notype : " + ext);
+            stream.end();
+            return true;
+        }
+        return false;
+    };
+    Page.ignorePage = function (title) {
+        for (var _i = 0, _a = conf_1.Conf.params["ignoreWords"]; _i < _a.length; _i++) {
+            var word = _a[_i];
+            if (title.indexOf(word) >= 0) {
+                conf_1.Conf.procLog("page", "ignoreWord : " + word + " : " + title);
+                return true;
+            }
+        }
+        return false;
+    };
     Page.download = function (site_title, pageurl, id) {
         var _this = this;
         Page.site_title = site_title;
@@ -721,10 +742,17 @@ var Page = (function () {
             //Conf.procLog("page", "start:" + this.pageurl);
             var p = client.fetch(Page.pageurl);
             p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
-                var imgs, polling_1;
+                var title_raw, imgs, polling_1;
                 return __generator(this, function (_a) {
                     try {
-                        Page.page_title = conf_1.Conf.genPagedirname(result.$("title").text(), Page.id);
+                        title_raw = result.$("title").text();
+                        Page.page_title = conf_1.Conf.genPagedirname(title_raw, Page.id);
+                        conf_1.Conf.procLog("info", "page.download : " + title_raw + " : " + this.pageurl);
+                        if (Page.ignorePage(title_raw)) {
+                            // 無視する単語が入っていたのでここで終了。
+                            site_1.Site.nextPage();
+                            return [2 /*return*/];
+                        }
                         imgs = result.$("img");
                         if (imgs.length > conf_1.Conf.params["skipimgcnt"]) {
                             Page.imgcnts = imgs.length;
@@ -758,51 +786,6 @@ var Page = (function () {
                             };
                             // キューに貯まるのを待つために、ちょっと時間を開ける
                             setTimeout(polling_1, 5 * 1000);
-                            //Site.nextPage(); // for test
-                        }
-                        else {
-                            // 画像がなければ次へ。
-                            conf_1.Conf.procLog("page", "noimg");
-                            site_1.Site.nextPage();
-                        }
-                    }
-                    catch (e2) {
-                        conf_1.Conf.pdException("page", "e2" + e2);
-                        site_1.Site.nextPage();
-                    }
-                    return [2 /*return*/];
-                });
-            }); });
-            p.catch(function (e3) {
-                conf_1.Conf.pdException("page", "e3" + e3);
-                // エラーが起きたので次。
-                site_1.Site.nextPage();
-            });
-        }
-        catch (e4) {
-            conf_1.Conf.pdException("page", "e4" + e4);
-            // エラーが起きたので次。
-            site_1.Site.nextPage();
-        }
-    };
-    Page.download_old = function (site_title, pageurl, id) {
-        var _this = this;
-        Page.site_title = site_title;
-        Page.pageurl = pageurl;
-        Page.id = id;
-        Page.imgid = 0;
-        try {
-            //Conf.procLog("page", "start:" + this.pageurl);
-            var p = client.fetch(Page.pageurl);
-            p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
-                var imgs;
-                return __generator(this, function (_a) {
-                    try {
-                        Page.page_title = conf_1.Conf.genPagedirname(result.$("title").text(), Page.id);
-                        imgs = result.$("img");
-                        if (imgs.length > conf_1.Conf.params["skipimgcnt"]) {
-                            conf_1.Conf.procLog("page", "dlimg " + Page.page_title + " : " + imgs.length);
-                            imgs.download();
                             //Site.nextPage(); // for test
                         }
                         else {

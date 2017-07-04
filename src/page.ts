@@ -28,19 +28,13 @@ export class Page {
                     //     Site.nextPage();
                     // }
                     Conf.procLog("img", "dl(" + Page.page_title + ") " + client.download.state.queue);
-                    if (stream.length < Conf.params["ignorebyte"]) {
-                        //Conf.procLog("img", "small : " + stream.length);
-                        stream.end();
-                        return; // 無視するサイズ
-                    }
-                    //let url = stream.url.href;
                     let ext = Conf.extType(stream.type);
-                    if (ext == "") {
-                        // 違うタイプのファイルは不要
-                        Conf.procLog("img", "notype : " + ext);
-                        stream.end();
+
+                    if(Page.ignoreImage(stream, ext)) {
+                        // 無視する内容なのでここでおしまい。
                         return;
                     }
+
                     Page.imgid++; // ID発行
                     let path = Conf.dlfile(Page.site_title, Page.page_title, ext, Page.imgid);
                     Conf.procLog("img", "rdy : " + stream.url.href);
@@ -67,6 +61,32 @@ export class Page {
         });
     }
 
+    static ignoreImage(stream: client.Download.Stream, ext: string) : boolean {
+        if (stream.length < Conf.params["ignorebyte"]) {
+            //Conf.procLog("img", "small : " + stream.length);
+            stream.end();
+            return true; // 無視するサイズ
+        }
+        //let url = stream.url.href;
+        if (ext == "") {
+            // 違うタイプのファイルは不要
+            //Conf.procLog("img", "notype : " + ext);
+            stream.end();
+            return true;
+        }
+        return false;
+    }
+
+    static ignorePage(title: string) {
+        for(let word of Conf.params["ignoreWords"]) {
+            if(title.indexOf(word) >= 0) {
+                Conf.procLog("page", "ignoreWord : " + word + " : " + title);
+                return true;
+            }
+        }
+        return false;
+    }
+
     static download(site_title: string, pageurl: string, id: number) {
 
         Page.site_title = site_title;
@@ -79,8 +99,15 @@ export class Page {
             let p = client.fetch(Page.pageurl);
             p.then(async (result: client.FetchResult) => {
                 try {
-                    Page.page_title = Conf.genPagedirname(result.$("title").text(), Page.id);
-                    //Conf.procLog("page", "dl : " + result.$("title").text() + " : " + this.pageurl);
+                    let title_raw : string = result.$("title").text();
+                    Page.page_title = Conf.genPagedirname(title_raw, Page.id);
+                    Conf.procLog("info", "page.download : " + title_raw + " : " + this.pageurl);
+
+                    if(Page.ignorePage(title_raw)) {
+                        // 無視する単語が入っていたのでここで終了。
+                        Site.nextPage();
+                        return;
+                    }
 
                     let imgs = result.$("img");
 
@@ -138,48 +165,4 @@ export class Page {
             Site.nextPage();
         }
     }
-
-    static download_old(site_title: string, pageurl: string, id: number) {
-
-        Page.site_title = site_title;
-        Page.pageurl = pageurl;
-        Page.id = id;
-        Page.imgid = 0;
-
-        try {
-            //Conf.procLog("page", "start:" + this.pageurl);
-            let p = client.fetch(Page.pageurl);
-            p.then(async (result: client.FetchResult) => {
-                try {
-                    Page.page_title = Conf.genPagedirname(result.$("title").text(), Page.id);
-                    //Conf.procLog("page", "dl : " + result.$("title").text() + " : " + this.pageurl);
-
-                    let imgs = result.$("img");
-
-                    if (imgs.length > Conf.params["skipimgcnt"]) {
-                        Conf.procLog("page", "dlimg " + Page.page_title + " : " + imgs.length);
-                        imgs.download();
-                        //Site.nextPage(); // for test
-                    } else {
-                        // 画像がなければ次へ。
-                        Conf.procLog("page", "noimg");
-                        Site.nextPage();
-                    }
-                } catch (e2) {
-                    Conf.pdException("page", "e2" + e2);
-                    Site.nextPage();
-                }
-            });
-            p.catch((e3: Error) => {
-                Conf.pdException("page", "e3" + e3);
-                // エラーが起きたので次。
-                Site.nextPage();
-            });
-        } catch (e4) {
-            Conf.pdException("page", "e4" + e4);
-            // エラーが起きたので次。
-            Site.nextPage();
-        }
-    }
-
 }

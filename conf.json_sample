@@ -1,12 +1,18 @@
 {
     "dldirpath": "./dlimgs",
     "dirnamelen": 18,
-    "ignorebyte" : 300000,
+    "ignorebyte" : 0,
     "skipimgcnt" : 7,
     "timeoutmsec" : 3000,
+    "parallel": 3,
     "pollingmsec" : 1000,
     "pollingcnts" : 20,
-    "parallel": 3,
+    "ignoreWords" : [
+        "Google 検索",
+        "Googleのサービス",
+        "Google ショッピング",
+        "Google ニュース"
+    ],
     "sites": [
         {
             "title": "101_日本アルプス",
