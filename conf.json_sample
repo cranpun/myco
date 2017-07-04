@@ -13,6 +13,11 @@
         "Google ショッピング",
         "Google ニュース"
     ],
+    "ignoreUrls" : [
+        "javascript",
+        "/category/",
+        "/tag/"
+    ],
     "sites": [
         {
             "title": "101_日本アルプス",

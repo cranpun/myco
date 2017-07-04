@@ -11,14 +11,14 @@ export class Site {
     private static page_id;
     private static page_urls: string[];
 
-    static download(site) {
+    static async download(site) {
         Site.site = site;
         Site.page_id = 0;
         Site.page_urls = [];
         try {
             let p = client.fetch(Site.site["url"]);
             p.then(async (result: client.FetchResult) => {
-                Conf.procLog("site", "dl : " + Site.site.title);
+                //Conf.procLog("site", "dl : " + Site.site.title);
                 let as = result.$("a");
 
                 for (let i = 0; i < as.length; i++) {
@@ -29,13 +29,16 @@ export class Site {
                             let pageurl_org = url.resolve(Site.site["url"], href);
                             // #以下は除く
                             let pageurl = pageurl_org.split("#")[0];
-                            if (pageurl.indexOf("javascript") < 0) {
-                                Conf.procLog("site", "for: " + pageurl);
-                                if (await Pagesdb.noPage(pageurl)) {
-                                    await Pagesdb.putPage(pageurl);
-                                    Site.page_urls.push(pageurl);
-                                }
+                            let flag = await Site.ignoreUrl(pageurl);
+                            console.log("ignore : " + flag);
+                            if(flag) {
+                                // 無視するURLが含まれていたため次へ。
+                                continue;
                             }
+
+                            Conf.procLog("site", "for: " + pageurl);
+                            await Pagesdb.putPage(pageurl);
+                            Site.page_urls.push(pageurl);
                         }
                     } catch (e) {
                         // do nothing : ill url (ex. javascript)
@@ -52,6 +55,22 @@ export class Site {
             Conf.pdException("site", e);
             Sites.nextSite();
         }
+    }
+    static async ignoreUrl(url: string) {
+        for(let u of Conf.params["ignoreUrls"]) {
+            //Conf.procLog("site", "check url : " + u + " -> " + url);
+            if(url.indexOf(u) >= 0) {
+                // 無視するURLが含まれていた。
+                //Conf.procLog("site", "ignore url : " + url);
+                return true;
+            }
+        }
+        if (await Pagesdb.noPage(url) == false) {
+            // 登録済ならignore
+            //Conf.procLog("site", "same url : " + url);
+            return true;
+        }
+        return false;
     }
 
     static nextPage() {

@@ -527,63 +527,99 @@ var Site = (function () {
     function Site() {
     }
     Site.download = function (site) {
-        var _this = this;
-        Site.site = site;
-        Site.page_id = 0;
-        Site.page_urls = [];
-        try {
-            var p = client.fetch(Site.site["url"]);
-            p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
-                var as, i, a, href, pageurl_org, pageurl, e_1;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            conf_1.Conf.procLog("site", "dl : " + Site.site.title);
-                            as = result.$("a");
-                            i = 0;
-                            _a.label = 1;
-                        case 1:
-                            if (!(i < as.length)) return [3 /*break*/, 8];
-                            _a.label = 2;
-                        case 2:
-                            _a.trys.push([2, 6, , 7]);
-                            a = as[i];
-                            href = a.attribs["href"];
-                            if (!(href !== undefined)) return [3 /*break*/, 5];
-                            pageurl_org = url.resolve(Site.site["url"], href);
-                            pageurl = pageurl_org.split("#")[0];
-                            if (!(pageurl.indexOf("javascript") < 0)) return [3 /*break*/, 5];
-                            conf_1.Conf.procLog("site", "for: " + pageurl);
-                            return [4 /*yield*/, pagesdb_1.Pagesdb.noPage(pageurl)];
-                        case 3:
-                            if (!_a.sent()) return [3 /*break*/, 5];
-                            return [4 /*yield*/, pagesdb_1.Pagesdb.putPage(pageurl)];
-                        case 4:
-                            _a.sent();
-                            Site.page_urls.push(pageurl);
-                            _a.label = 5;
-                        case 5: return [3 /*break*/, 7];
-                        case 6:
-                            e_1 = _a.sent();
-                            // do nothing : ill url (ex. javascript)
-                            conf_1.Conf.pdException("site", e_1);
-                            return [3 /*break*/, 7];
-                        case 7:
-                            i++;
-                            return [3 /*break*/, 1];
-                        case 8:
-                            conf_1.Conf.procLog("site", "end : for");
-                            // 最初の一つ目のページを処理
-                            Site.nextPage();
-                            return [2 /*return*/];
-                    }
-                });
-            }); });
-        }
-        catch (e) {
-            conf_1.Conf.pdException("site", e);
-            sites_1.Sites.nextSite();
-        }
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            var p;
+            return __generator(this, function (_a) {
+                Site.site = site;
+                Site.page_id = 0;
+                Site.page_urls = [];
+                try {
+                    p = client.fetch(Site.site["url"]);
+                    p.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
+                        var as, i, a, href, pageurl_org, pageurl, flag, e_1;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    as = result.$("a");
+                                    i = 0;
+                                    _a.label = 1;
+                                case 1:
+                                    if (!(i < as.length)) return [3 /*break*/, 8];
+                                    _a.label = 2;
+                                case 2:
+                                    _a.trys.push([2, 6, , 7]);
+                                    a = as[i];
+                                    href = a.attribs["href"];
+                                    if (!(href !== undefined)) return [3 /*break*/, 5];
+                                    pageurl_org = url.resolve(Site.site["url"], href);
+                                    pageurl = pageurl_org.split("#")[0];
+                                    return [4 /*yield*/, Site.ignoreUrl(pageurl)];
+                                case 3:
+                                    flag = _a.sent();
+                                    console.log("ignore : " + flag);
+                                    if (flag) {
+                                        // 無視するURLが含まれていたため次へ。
+                                        return [3 /*break*/, 7];
+                                    }
+                                    conf_1.Conf.procLog("site", "for: " + pageurl);
+                                    return [4 /*yield*/, pagesdb_1.Pagesdb.putPage(pageurl)];
+                                case 4:
+                                    _a.sent();
+                                    Site.page_urls.push(pageurl);
+                                    _a.label = 5;
+                                case 5: return [3 /*break*/, 7];
+                                case 6:
+                                    e_1 = _a.sent();
+                                    // do nothing : ill url (ex. javascript)
+                                    conf_1.Conf.pdException("site", e_1);
+                                    return [3 /*break*/, 7];
+                                case 7:
+                                    i++;
+                                    return [3 /*break*/, 1];
+                                case 8:
+                                    conf_1.Conf.procLog("site", "end : for");
+                                    // 最初の一つ目のページを処理
+                                    Site.nextPage();
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                }
+                catch (e) {
+                    conf_1.Conf.pdException("site", e);
+                    sites_1.Sites.nextSite();
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
+    Site.ignoreUrl = function (url) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _i, _a, u;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        for (_i = 0, _a = conf_1.Conf.params["ignoreUrls"]; _i < _a.length; _i++) {
+                            u = _a[_i];
+                            //Conf.procLog("site", "check url : " + u + " -> " + url);
+                            if (url.indexOf(u) >= 0) {
+                                // 無視するURLが含まれていた。
+                                //Conf.procLog("site", "ignore url : " + url);
+                                return [2 /*return*/, true];
+                            }
+                        }
+                        return [4 /*yield*/, pagesdb_1.Pagesdb.noPage(url)];
+                    case 1:
+                        if ((_b.sent()) == false) {
+                            // 登録済ならignore
+                            //Conf.procLog("site", "same url : " + url);
+                            return [2 /*return*/, true];
+                        }
+                        return [2 /*return*/, false];
+                }
+            });
+        });
     };
     Site.nextPage = function () {
         if (Site.page_urls != undefined) {
