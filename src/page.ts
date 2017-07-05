@@ -63,14 +63,14 @@ export class Page {
 
     static ignoreImage(stream: client.Download.Stream, ext: string) : boolean {
         if (stream.length < Conf.params["ignorebyte"]) {
-            //Conf.procLog("img", "small : " + stream.length);
+            Conf.procLog("info", "small : " + stream.length);
             stream.end();
             return true; // 無視するサイズ
         }
         //let url = stream.url.href;
         if (ext == "") {
             // 違うタイプのファイルは不要
-            //Conf.procLog("img", "notype : " + ext);
+            Conf.procLog("info", "notype : " + ext);
             stream.end();
             return true;
         }
@@ -80,7 +80,7 @@ export class Page {
     static ignorePage(title: string) {
         for(let word of Conf.params["ignoreWords"]) {
             if(title.indexOf(word) >= 0) {
-                Conf.procLog("page", "ignoreWord : " + word + " : " + title);
+                Conf.procLog("info", "ignoreWord : " + word + " : " + title);
                 return true;
             }
         }

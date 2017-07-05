@@ -30,7 +30,6 @@ export class Site {
                             // #以下は除く
                             let pageurl = pageurl_org.split("#")[0];
                             let flag = await Site.ignoreUrl(pageurl);
-                            console.log("ignore : " + flag);
                             if(flag) {
                                 // 無視するURLが含まれていたため次へ。
                                 continue;
@@ -61,13 +60,13 @@ export class Site {
             //Conf.procLog("site", "check url : " + u + " -> " + url);
             if(url.indexOf(u) >= 0) {
                 // 無視するURLが含まれていた。
-                //Conf.procLog("site", "ignore url : " + url);
+                Conf.procLog("site", "ignore url : " + url);
                 return true;
             }
         }
         if (await Pagesdb.noPage(url) == false) {
             // 登録済ならignore
-            //Conf.procLog("site", "same url : " + url);
+            Conf.procLog("site", "same url : " + url);
             return true;
         }
         return false;

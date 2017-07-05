@@ -557,7 +557,6 @@ var Site = (function () {
                                     return [4 /*yield*/, Site.ignoreUrl(pageurl)];
                                 case 3:
                                     flag = _a.sent();
-                                    console.log("ignore : " + flag);
                                     if (flag) {
                                         // 無視するURLが含まれていたため次へ。
                                         return [3 /*break*/, 7];
@@ -605,7 +604,7 @@ var Site = (function () {
                             //Conf.procLog("site", "check url : " + u + " -> " + url);
                             if (url.indexOf(u) >= 0) {
                                 // 無視するURLが含まれていた。
-                                //Conf.procLog("site", "ignore url : " + url);
+                                conf_1.Conf.procLog("site", "ignore url : " + url);
                                 return [2 /*return*/, true];
                             }
                         }
@@ -613,7 +612,7 @@ var Site = (function () {
                     case 1:
                         if ((_b.sent()) == false) {
                             // 登録済ならignore
-                            //Conf.procLog("site", "same url : " + url);
+                            conf_1.Conf.procLog("site", "same url : " + url);
                             return [2 /*return*/, true];
                         }
                         return [2 /*return*/, false];
@@ -745,14 +744,14 @@ var Page = (function () {
     };
     Page.ignoreImage = function (stream, ext) {
         if (stream.length < conf_1.Conf.params["ignorebyte"]) {
-            //Conf.procLog("img", "small : " + stream.length);
+            conf_1.Conf.procLog("info", "small : " + stream.length);
             stream.end();
             return true; // 無視するサイズ
         }
         //let url = stream.url.href;
         if (ext == "") {
             // 違うタイプのファイルは不要
-            //Conf.procLog("img", "notype : " + ext);
+            conf_1.Conf.procLog("info", "notype : " + ext);
             stream.end();
             return true;
         }
@@ -762,7 +761,7 @@ var Page = (function () {
         for (var _i = 0, _a = conf_1.Conf.params["ignoreWords"]; _i < _a.length; _i++) {
             var word = _a[_i];
             if (title.indexOf(word) >= 0) {
-                conf_1.Conf.procLog("page", "ignoreWord : " + word + " : " + title);
+                conf_1.Conf.procLog("info", "ignoreWord : " + word + " : " + title);
                 return true;
             }
         }
