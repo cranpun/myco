@@ -9,6 +9,7 @@ import { Site } from "./site";
 
 export class Page {
     private static site_title: string;
+    private static site_tagtype: string;
     private static pageurl: string;
     private static id: number;
     private static imgid: number;
@@ -87,9 +88,10 @@ export class Page {
         return false;
     }
 
-    static download(site_title: string, pageurl: string, id: number) {
+    static download(site_title: string, site_tagtype: string,  pageurl: string, id: number) {
 
         Page.site_title = site_title;
+        Page.site_tagtype = site_tagtype;
         Page.pageurl = pageurl;
         Page.id = id;
         Page.imgid = 0;
@@ -109,46 +111,46 @@ export class Page {
                         return;
                     }
 
-                    let imgs = result.$("img");
-
-                    if (imgs.length > Conf.params["skipimgcnt"]) {
-                        Page.imgcnts = imgs.length;
-                        Page.pollingcnts = 0;
-                        Conf.procLog("page", "dlimg " + Page.page_title + " : " + Page.imgcnts);
-                        imgs.download();
-                        
-                        // ダウンロードが終わるまでポーリング
-                        let polling = () => {
-                            //let cnts = client.download.state.complete + client.download.state.error;
-                            let cnts = client.download.state.queue;
-                            if(Page.pollingcnts > Conf.params["pollingcnts"]) {
-                                // ポーリングが規定回数を超えたら強制的に次へ。
-                                Conf.procLog("page", "polling max : " + Page.page_title);
-                                Page.imgcnts = 0;
-                                Page.pollingcnts = 0;
-                                Site.nextPage();
-                            } else if (cnts > 0) {
-                                // ダウンロード中
-                                Conf.procLog("page", "polling " + Page.page_title + " : " + cnts + "/" + Page.imgcnts + " : poll " + Page.pollingcnts + " : " + JSON.stringify(client.download.state));
-                                let wait = parseInt(Conf.params["pollingmsec"]);
-                                Page.pollingcnts++;
-                                setTimeout(polling, wait); // ポーリング
-                            } else {
-                                // 終わったので次へ
-                                Conf.procLog("page", "end : " + Page.page_title + " " + cnts + "/" + Page.imgcnts + JSON.stringify(client.download.state));
-                                Page.imgcnts = 0;
-                                Page.pollingcnts = 0;
-                                Site.nextPage();
-                            }
-                        };
-                        // キューに貯まるのを待つために、ちょっと時間を開ける
-                        setTimeout(polling, 5 * 1000);
-                        //Site.nextPage(); // for test
-                    } else {
-                        // 画像がなければ次へ。
-                        Conf.procLog("page", "noimg");
-                        Site.nextPage();
+                    // このサイトのタグタイプに従ってurlリストを作成
+                    let urllist = [];
+                    if(Page.site_tagtype === "a") {
+                        urllist = Page.makeUrlListAhref(result);
+                    } else if(Page.site_tagtype === "img") {
+                        urllist = Page.makeUrlListImgsrc(result);
                     }
+                    
+                    // 画像数チェック
+                    if(urllist.length < Conf.params["skipimgcnt"]) {
+                        Site.nextPage();
+                        return;
+                    }
+                    
+                    // 取得したURLの画像を全てダウンロード
+                    
+                    for(let i = 0; i < urllist.length; i++) {
+                        const url = urllist[i];
+                        if(Conf.isImgUr(url)) {
+                            try {
+                                let ext = Conf.extType(stream.type);
+                                let path = Conf.dlfile(Page.site_title, Page.page_title, ext, i);
+                                request
+                                    .get(url)
+                                    .on("response", function(res) {
+                                        // for debug
+                                        Conf.procLog("info", "page.download : ");
+                                        Conf.procLog("info", res);
+                                    })
+                                    .pipe(path);
+                            } catch(e) {
+                                Conf.pdException("page", "download" + e);
+                                
+                            }
+                        }
+                    }
+
+                    // 全部終ったので次のページへ。
+                    Site.nextPage();
+                    
                 } catch (e2) {
                     Conf.pdException("page", "e2" + e2);
                     Site.nextPage();
@@ -164,5 +166,41 @@ export class Page {
             // エラーが起きたので次。
             Site.nextPage();
         }
+    }
+    
+    static makeUrlListAhref(result) {
+        let ret = [];
+        let as = result.$("a");
+        for (let i = 0; i < as.length; i++) {
+            try {
+                let a = as[i];
+                let href = a.attribs["href"];
+                if (href !== undefined) {
+                    ret.push(href);
+                }
+            } catch (e) {
+                // do nothing : ill url (ex. javascript)
+                Conf.pdException("page.makeUrlListAhref", e);
+            }
+        }
+        return ret;
+    }
+    
+    static makeUrlListImgsrc(result) {
+        let ret = [];
+        let as = result.$("img");
+        for (let i = 0; i < as.length; i++) {
+            try {
+                let a = as[i];
+                let href = a.attribs["src"];
+                if (href !== undefined) {
+                    ret.push(href);
+                }
+            } catch (e) {
+                // do nothing : ill url (ex. javascript)
+                Conf.pdException("page.makeUrlListImgsrc", e);
+            }
+        }
+        return ret;
     }
 }

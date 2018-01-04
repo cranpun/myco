@@ -108,6 +108,23 @@ export class Conf {
         }
         return ret;
     }
+    
+    static isImgUrl(url: string): boolean {
+        var ret = false;
+        try {
+            var u = new URL(url);
+            var file = u.pathname;
+            var ext = path.extname(file);
+            if ([".jpg", ".jpeg", ".png"].indexOf(ext) >= 0) {
+                ret = true;
+            }
+        }
+        catch (e) {
+            Conf.pdException("conf", e);
+            ret = false;
+        }
+        return ret;
+    }
 
     private static escapes = [
             new RegExp(" ", 'g'),
